@@ -4,11 +4,18 @@ PIE MSXS-08
 ISAE-SUPAERO Group project for Prof en Poche
 
 Project Organization
+
+
+==============================
+
+Info pour vous connecté en VPN dans le fichier [SETUP_VPN.md](./SETUP_VPN.md)
+
 ------------
 
     ├── LICENSE
     ├── Makefile           <- Makefile with commands like `make data` or `make train`
     ├── README.md          <- The top-level README for developers using this project.
+    ├── SETUP_VPN.md       <- Information on how to setup the vpn
     ├── data
     │   ├── external       <- Data from third party sources.
     │   ├── interim        <- Intermediate data that has been transformed.
