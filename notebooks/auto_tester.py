@@ -1,3 +1,16 @@
+import sys
+
+arg = sys.argv
+if (len(arg) < 5):
+    raise Exception(f"not enough argument usage : python {arg[0]} modelname presision inputfile outputfile")
+
+lines = []
+# Open the file in read mode
+with open(arg[3], 'r') as file:
+    # Read all lines into a list
+    lines = file.readlines()
+
+
 # Hugging-Face model ids
 models_id = {
     ### Mistral-based ###
@@ -31,36 +44,25 @@ models_id = {
 }
 
 ###### Choose your model with its name ######
-loop = True
-while loop :
-    model_name = input("what model to use? (list to see all models) :\n")
-    if model_name == "list":
-        print("the available models are")
-        print(models_id.keys())
-    elif (model_name in models_id):
-        loop = False
-    else :
-        print("unkown model")
-#model_name = "wizard7b_math" #@param ["mistral7b_instruct", "mistral7b_orca", "zephyr7b", "vigostral7b","bloom7b", "vigogne7b_instruct", "llama2-chat7b", "llama2-chat13b", "vigogne7b","wizard7b_math", "wizard13b_math", "wizard15b_coder", "wizard34b_coder"]
-loop = True
-###### Choose your quantization config ######
-while loop:
-    quant_config = input("select a precision (1-4) : ")
-    if quant_config == "1":
-        quant_config = "4bits"
-        loop = False
-    elif quant_config == "2":
-        quant_config = "8bits"
-        loop = False
-    elif quant_config == "3":
-        quant_config = "16bits"
-        loop = False
-    elif quant_config == "4":
-        quant_config = "32bits"
-        loop = False
-    else :
-        print("valid input are number between 1 and 4 included")
-#quant_config = "32bits" # @param ["4bits", "8bits", "16bits", "32bits"]
+if not (arg[1] in models_id):
+    raise Exception("invalide model name inputed, valide models are "+ str(models_id.keys()))
+model_name = arg[1]
+
+quant_config = arg[2]
+if quant_config == "1":
+    quant_config = "4bits"
+    loop = False
+elif quant_config == "2":
+    quant_config = "8bits"
+    loop = False
+elif quant_config == "3":
+    quant_config = "16bits"
+    loop = False
+elif quant_config == "4":
+    quant_config = "32bits"
+    loop = False
+else :
+    raise Exception("valid input are number between 1 and 4 included")
 
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
@@ -140,54 +142,25 @@ elif  quant_config == "32bits":
 
 # Instruction : if the model is a chat model, specify context, persona, personality, skills, ...
 print("model ready")
-loop = True
-while loop:
-    prompt = input("input the prompt (!help) : \n")
-    if prompt == "!help":
-        print("!exit to close the model")
-    elif prompt == "!exit":
-        loop = False
-    else:
-        inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-        outputs = model.generate(
-            **inputs,
-            #temperature=1.1, # >1 augmente la diversité/surprise sur la génération (applatie la distribution sur le next token), <1 diminue la diversité de la génération (rend la distribution + spiky)
-            do_sample=False,
-            top_k=5,
-            top_p=10, # le token suivant est tiré du top 'top_p' de la distribution uniquement
-            num_return_sequences=1,
-            repetition_penalty=1.5, #pour éviter les répétitions, je suis pas au clair avec commment il marche celui-là mais important à priori
-            eos_token_id=tokenizer.eos_token_id,
-            max_length=1024,
-            )
-        print(tokenizer.decode(outputs[0], skip_special_tokens=True))
-###
-#chat = True
-####
-#
-#instruction = "You are a passionate elementary school teacher. " + \
-#"You are teaching a class of 20 pupils. " + \
-#"You love to explain things to childrens with images they understand at their age and relevant examples."
-#
-## Prompt : your question, task, ...
-#prompt = "Write a math exercice around a football with a couple of multiplications."
-#prompt_no_chat = "Here is a small 3-examples math word problem for children aged 8 years old on basic multiplication with a football theme/story to hook them : "
-#
-#text_input = instruction + prompt if chat else prompt_no_chat
-#inputs = tokenizer(text_input, return_tensors="pt").to(model.device)
-#
-#
-#outputs = model.generate(
-#    **inputs,
-#    #temperature=1.1, # >1 augmente la diversité/surprise sur la génération (applatie la distribution sur le next token), <1 diminue la diversité de la génération (rend la distribution + spiky)
-#    do_sample=False,
-#    top_k=5,
-#    top_p=10, # le token suivant est tiré du top 'top_p' de la distribution uniquement
-#    num_return_sequences=1,
-#    repetition_penalty=1.5, #pour éviter les répétitions, je suis pas au clair avec commment il marche celui-là mais important à priori
-#    eos_token_id=tokenizer.eos_token_id,
-#    max_length=1024,
-#    )
-#
-## display the generated answer
-#print(tokenizer.decode(outputs[0], skip_special_tokens=True))
+res = []
+for line in lines:
+    temps_res = line.strip()
+    inputs = tokenizer(temps_res, return_tensors="pt").to(model.device)
+    outputs = model.generate(
+        **inputs,
+        #temperature=1.1, # >1 augmente la diversité/surprise sur la génération (applatie la distribution sur le next token), <1 diminue la diversité de la génération (rend la distribution + spiky)
+        do_sample=False,
+        top_k=5,
+        top_p=10, # le token suivant est tiré du top 'top_p' de la distribution uniquement
+        num_return_sequences=1,
+        repetition_penalty=1.5, #pour éviter les répétitions, je suis pas au clair avec commment il marche celui-là mais important à priori
+        eos_token_id=tokenizer.eos_token_id,
+        max_length=1024,
+        )
+    temps_res = tokenizer.decode(outputs[0], skip_special_tokens=True) + '\n----------------\n'
+    res.append(temps_res)
+
+
+file = open(arg[4], 'x')
+for line in res:
+    file.write(line)
