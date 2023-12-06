@@ -9,9 +9,9 @@ def generate_text(prompt):
     return generated_text
 
 
-def load_model(model_type="mistral", model_folder="../../models/"):
+def load_model(model_name, model_type="mistral", model_folder="./models/"):
     
-    MODEL_PATH = model_folder + model_type
+    MODEL_PATH = model_folder + model_type + "/" + model_name
     
     try:
         llm = AutoModelForCausalLM.from_pretrained(
@@ -25,11 +25,11 @@ def load_model(model_type="mistral", model_folder="../../models/"):
         print(f"Error loading model: {e}")
         sys.exit(1)
 
-def gradio_app(model_name):
+def gradio_app(model_name, model_type):
 
     # Load the model and its tokenizer
     global llm
-    llm = load_model(model_name)
+    llm = load_model(model_name, model_type)
 
     # Create Gradio Interface
     iface = gr.Interface(
@@ -47,12 +47,13 @@ def gradio_app(model_name):
 
 # python app.py model_name
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 3:
         print("Usage: python app.py <model_name>")
         sys.exit(1)
     
     # Retrieve the model name from the command line
-    model_name_arg = sys.argv[1]
+    model_type = sys.argv[1]
+    model_name = sys.argv[2]
     
     # Launch the Gradio interface
-    gradio_app(model_name_arg)
+    gradio_app(model_name, model_type)
