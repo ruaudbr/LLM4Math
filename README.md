@@ -13,8 +13,8 @@ Info pour vous connecté en VPN dans le fichier [SETUP_VPN.md](./SETUP_VPN.md)
 ==============================
 
 Sur la machine 192.168.1.66,
-L'environement python à utilisé se trouve dans ~/venv/bin
-vous pouvez l'activer avec la commande `source ~/venv/bin/activate`
+L'environement python à utilisé se trouve dans ~/dataSSD/venv/bin
+vous pouvez l'activer avec la commande `source ~/dataSSD/venv/bin/activate`
 
 ------------
 
