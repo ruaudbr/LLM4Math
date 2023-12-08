@@ -1,55 +1,85 @@
 import gradio as gr
 from ctransformers import AutoModelForCausalLM
 import sys
+import os
+
+def load_model_list(path):
+    models = {}
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith(".gguf"):
+                file_path = os.path.join(root, file)
+                models[file] = file_path
+    return models
 
 def generate_text(prompt):
-    
+    global llm
+    global ready
+    if llm is None:
+        return "Error, no model selected"
+    if not ready:
+        return "the llm is not ready yet"
     print("Start generating text...")
     generated_text = llm(prompt, stream=False)
     print("Done generating text :)")
     
     return generated_text
 
-
-def load_model(
-    model_name, 
-    model_type="mistral", 
-    gpu_layers=0, 
-    model_folder="./models/"
-):
+def load_model(model_name, gpu_layer):
+    MODEL_PATH = list_of_models[model_name]
+    global llm
+    global ready
     
-    MODEL_PATH = model_folder + model_type + "/" + model_name
-    
-    
-    print(f"Loading model from {MODEL_PATH}")
+    if "llama" in model_name:
+        model_type = "llama2"
+    else:
+        model_type = "mistral"
+    print(f"Loading model from {MODEL_PATH}, type {model_type}")
+    ready = False
     try:
         llm = AutoModelForCausalLM.from_pretrained(
             MODEL_PATH,
             model_type=model_type,
-            gpu_layers=gpu_layers
+            gpu_layers=gpu_layer
         )
-        print("Model loaded successfully :)")
+        gr.Error("Done loading model")
+        print("done loading model")
+        ready = True
         return llm
     
     except Exception as e:
+        gr.Error(f"Error loading model: {e}")
         print(f"Error loading model: {e}")
-        sys.exit(1)
+        return None
 
-def gradio_app(model_name, model_type, gpu_layers):
+def gradio_app(models_path):
 
     # Load the model and its tokenizer
+    global list_of_models
+    list_of_models = load_model_list(models_path)
     global llm
-    llm = load_model(model_name, model_type, gpu_layers)
+    global ready
+    llm = None
+    ready = False
+    #llm = load_model(model_name, model_type, gpu_layers)
 
     # Create a Gradio Chatbat Interface
-    iface = gr.Interface(
-        fn=generate_text,
-        inputs="text",
-        outputs="text",
-        live=False,
-        title="Teacher Assistant",
-        description="Ask your Teacher Assistant to generate educational content",
-    )
+    with gr.Blocks() as iface:
+        with gr.Tab("Teacher Assistant"):
+            gr.Interface(
+                fn=generate_text,
+                inputs="text",
+                outputs="text",
+                live=False,
+                title="Teacher Assistant",
+                description="Ask your Teacher Assistant to generate educational content",
+            )
+        with gr.Tab("option"):
+            model_Dd = gr.Dropdown(list_of_models.keys())
+            sl1 = gr.Slider(0, 5, step=1, info="nombre de layer sur le GPU")
+            b1 = gr.Button("Load model")
+
+            b1.click(load_model, inputs=[model_Dd, sl1], outputs=llm)
     
     # Launch Gradio Interface
     iface.launch()
@@ -57,13 +87,10 @@ def gradio_app(model_name, model_type, gpu_layers):
 
 # python src/app/app_GGUF.py "llama2" "llama-2-7b-chat.Q4_K_M.gguf"
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python app.py <model_name>")
-        sys.exit(1)
-    
-    # Retrieve the model name from the command line
-    model_type = sys.argv[1]
-    model_name = sys.argv[2]
-    gpu_layers = 0 if len(sys.argv) == 3 else int(sys.argv[3])
+    #if len(sys.argv) < 3:
+    if len(sys.argv) >= 3:
+        path = sys.argv[2]
+    else:
+        path = "/home/pie2023/dataSSD/models"
     # Launch the Gradio interface
-    gradio_app(model_name, model_type, gpu_layers)
+    gradio_app(path)
