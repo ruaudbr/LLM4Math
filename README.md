@@ -8,13 +8,13 @@ Project Organization
 
 ==============================
 
-Info pour vous connecté en VPN dans le fichier [SETUP_VPN.md](./SETUP_VPN.md)
+Info pour vous connecter en VPN dans le fichier [SETUP_VPN.md](./SETUP_VPN.md).
 
 ==============================
 
 Sur la machine 192.168.1.66,
-L'environement python à utilisé se trouve dans ~/dataSSD/venv/bin
-vous pouvez l'activer avec la commande `source ~/dataSSD/venv/bin/activate`
+L'environnement python à utiliser se trouve dans ~/dataSSD/venv/bin
+vous pouvez l'activer avec la commande `source ~/dataSSD/venv/bin/activate`.
 
 ------------
 
