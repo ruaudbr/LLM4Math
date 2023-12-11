@@ -66,8 +66,7 @@ else:
 
 model_id = models_id[model_name]
 
-print("Loading model:")
-print(model_id)
+print(f"Loading model: {model_id}")
 
 # quantization to int4 (don't want to mess with "device" here, to be studied)
 # 4bit, 4 bits = 1/2 byte --> #paramsInB * 1/2 = RAM needed to load full model
@@ -130,12 +129,12 @@ elif quant_config == "32bits":
     tokenizer = AutoTokenizer.from_pretrained(model_id)  # .to(device)
 
 
-output_filname = "answers" + model_name + "_" + quant_config + ".txt"
+output_filname = "answers" + "_" + model_name + "_" + quant_config + ".txt"
 file = open(output_filname, "w")
 
 # Instruction : if the model is a chat model, specify context, persona, personality, skills, ...
 print("Model ready")
-for prompt in tqdm.tqdm(prompts):  #
+for prompt in tqdm.tqdm(prompts, desc="Generation of the prompts"):
     prompt = prompt.strip()
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
     outputs = model.generate(
@@ -149,10 +148,5 @@ for prompt in tqdm.tqdm(prompts):  #
         eos_token_id=tokenizer.eos_token_id,
         max_length=1024,
     )
-    answer = (
-        tokenizer.decode(outputs[0], skip_special_tokens=True) + "\n----------------\n"
-    )
-    file.write(answer)
-
-for answer in answers:
+    answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
     file.write(answer)
