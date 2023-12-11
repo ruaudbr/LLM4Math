@@ -30,7 +30,7 @@ def load_model(model_name, gpu_layer):
     global llm
     global ready
     
-    if "llama" in model_name:
+    if "llama" in MODEL_PATH:
         model_type = "llama2"
     else:
         model_type = "mistral"
@@ -42,13 +42,11 @@ def load_model(model_name, gpu_layer):
             model_type=model_type,
             gpu_layers=gpu_layer
         )
-        gr.Error("Done loading model")
         print("done loading model")
         ready = True
         return llm
     
     except Exception as e:
-        gr.Error(f"Error loading model: {e}")
         print(f"Error loading model: {e}")
         return None
 
@@ -76,7 +74,7 @@ def gradio_app(models_path):
             )
         with gr.Tab("option"):
             model_Dd = gr.Dropdown(list_of_models.keys())
-            sl1 = gr.Slider(0, 5, step=1, info="nombre de layer sur le GPU")
+            sl1 = gr.Slider(0, 5000, step=1, info="nombre de layer sur le GPU")
             b1 = gr.Button("Load model")
 
             b1.click(load_model, inputs=[model_Dd, sl1], outputs=llm)
