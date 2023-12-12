@@ -24,7 +24,7 @@ def load_model(model_name, gpu_layer):
     else:
         model_type = "mistral"
     print(f"Loading {model_type}-type model from : \n {MODEL_PATH}")
-    llm_is_loaded = False
+
     try:
         llm = AutoModelForCausalLM.from_pretrained(
             MODEL_PATH,
@@ -53,7 +53,6 @@ def generate_text(prompt):
     return generated_text
 
 def predict(message, history):
-    global llm_is_loaded, llm
 
     if llm is None or not llm_is_loaded:
         return "No LLM has been loaded yet ..."
@@ -82,7 +81,7 @@ def gradio_app(models_path):
     
     # Initialize the llm. Will be chosen by the user
     global llm_is_loaded, llm
-    llm, llm_is_loaded = None, None
+    llm, llm_is_loaded = None, False
     #llm = load_model(model_name, model_type, gpu_layers)
 
     # Create a Gradio Chatbat Interface
