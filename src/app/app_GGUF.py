@@ -14,11 +14,11 @@ def load_available_models_paths(path):
 
 def generate_text(prompt):
     global llm
-    global ready
+    global llm_is_loaded
     if llm is None:
-        return "Error, no model selected"
-    if not ready:
-        return "the llm is not ready yet"
+        return "No LLM has been loaded yet ..."
+    if not llm_is_loaded:
+        return "No LLM has been loaded yet ..."
     print("Start generating text...")
     generated_text = llm(prompt, stream=False)
     print("Done generating text :)")
@@ -28,14 +28,14 @@ def generate_text(prompt):
 def load_model(model_name, gpu_layer):
     MODEL_PATH = available_models_paths[model_name]
     global llm
-    global ready
+    global llm_is_loaded
     
     if "llama" in MODEL_PATH:
         model_type = "llama2"
     else:
         model_type = "mistral"
     print(f"Loading model from {MODEL_PATH}, type {model_type}")
-    ready = False
+    llm_is_loaded = False
     try:
         llm = AutoModelForCausalLM.from_pretrained(
             MODEL_PATH,
@@ -43,7 +43,7 @@ def load_model(model_name, gpu_layer):
             gpu_layers=gpu_layer
         )
         print("done loading model")
-        ready = True
+        llm_is_loaded = True
         return llm
     
     except Exception as e:
@@ -57,8 +57,8 @@ def gradio_app(models_path):
     available_models_paths = load_available_models_paths(models_path)
     
     # Initialize the llm. Will be chosen by the user
-    global llm, ready
-    llm, ready = None, None
+    global llm, llm_is_loaded
+    llm, llm_is_loaded = None, None
     #llm = load_model(model_name, model_type, gpu_layers)
 
     # Create a Gradio Chatbat Interface
