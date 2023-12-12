@@ -12,23 +12,10 @@ def load_available_models_paths(path):
                 models_paths[file] = file_path
     return models_paths
 
-def generate_text(prompt):
-    global llm
-    global llm_is_loaded
-    if llm is None:
-        return "No LLM has been loaded yet ..."
-    if not llm_is_loaded:
-        return "No LLM has been loaded yet ..."
-    print("Start generating text...")
-    generated_text = llm(prompt, stream=False)
-    print("Done generating text :)")
-    
-    return generated_text
-
 def load_model(model_name, gpu_layer):
     MODEL_PATH = available_models_paths[model_name]
-    global llm
-    global llm_is_loaded
+    
+    global llm_is_loaded, llm
     
     if "llama" in MODEL_PATH:
         model_type = "llama2"
@@ -49,6 +36,20 @@ def load_model(model_name, gpu_layer):
     except Exception as e:
         print(f"Error loading model : {e}")
         return None
+    
+def generate_text(prompt):
+    global llm_is_loaded, llm
+
+    if llm is None:
+        return "No LLM has been loaded yet ..."
+    if not llm_is_loaded:
+        return "No LLM has been loaded yet ..."
+    print("Start generating text...")
+    generated_text = llm(prompt, stream=False)
+    print("Done generating text :)")
+    
+    return generated_text
+
 
 def gradio_app(models_path):
 
@@ -57,7 +58,7 @@ def gradio_app(models_path):
     available_models_paths = load_available_models_paths(models_path)
     
     # Initialize the llm. Will be chosen by the user
-    global llm, llm_is_loaded
+    global llm_is_loaded, llm
     llm, llm_is_loaded = None, None
     #llm = load_model(model_name, model_type, gpu_layers)
 
@@ -72,6 +73,8 @@ def gradio_app(models_path):
                 title="Teacher Assistant",
                 description="Ask your Teacher Assistant to generate educational content",
             )
+            
+            
         with gr.Tab("option"):
             model_Dd = gr.Dropdown(available_models_paths.keys())
             sl1 = gr.Slider(0, 5000, step=1, info="nombre de layer sur le GPU")
