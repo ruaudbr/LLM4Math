@@ -1,5 +1,7 @@
 import gradio as gr
+
 from ctransformers import AutoModelForCausalLM
+
 import sys
 import os
 
@@ -50,6 +52,27 @@ def generate_text(prompt):
     
     return generated_text
 
+def predict(message, history):
+    global llm_is_loaded, llm
+
+    if llm is None or not llm_is_loaded:
+        return "No LLM has been loaded yet ..."
+    
+    
+    dialogue_history_to_format = history + [[message, ""]]
+    messages = "".join(["".join(["\n<human>:"+item[0], "\n<bot>:"+item[1]])
+                   for item in dialogue_history_to_format])
+    
+    
+    
+    print("Started generating text ...")    
+    partial_message = ""
+    for new_token in llm(messages, stream=True):
+        if new_token != "<":
+            partial_message += new_token
+            yield partial_message
+    print("Done generating text :)")
+        
 
 def gradio_app(models_path):
 
@@ -65,31 +88,23 @@ def gradio_app(models_path):
     # Create a Gradio Chatbat Interface
     with gr.Blocks() as iface:
         with gr.Tab("Teacher Assistant"):
-            gr.Interface(
-                fn=generate_text,
-                inputs="text",
-                outputs="text",
-                live=False,
-                title="Teacher Assistant",
-                description="Ask your Teacher Assistant to generate educational content",
-            )
+            gr.ChatInterface(predict)           
             
-            
-        with gr.Tab("option"):
-            model_Dd = gr.Dropdown(available_models_paths.keys())
-            sl1 = gr.Slider(0, 5000, step=1, info="nombre de layer sur le GPU")
+        with gr.Tab("Model choice and Options"):
+            model_name_chosen = gr.Dropdown(available_models_paths.keys())
+            gpu_layers_chosen = gr.Slider(0, 5000, step=1, info="#layers to off-load on GPU")
             b1 = gr.Button("Load model")
-
-            b1.click(load_model, inputs=[model_Dd, sl1], outputs=llm)
+            b1.click(load_model, inputs=[model_name_chosen, gpu_layers_chosen], outputs=llm)
     
     # Launch Gradio Interface
     print("Launching Gradio Interface...")
     iface.launch()
 
 
+
+# python src/app/app_GGUF.py 
 # python src/app/app_GGUF.py "llama2" "llama-2-7b-chat.Q4_K_M.gguf"
 if __name__ == "__main__":
-    #if len(sys.argv) < 3:
     if len(sys.argv) >= 3:
         path = sys.argv[2]
     else:
