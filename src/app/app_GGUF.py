@@ -39,30 +39,14 @@ def load_model(model_name, gpu_layer):
         print(f"Error loading model : {e}")
         return None
     
-def generate_text(prompt):
-    global llm_is_loaded, llm
-
-    if llm is None:
-        return "No LLM has been loaded yet ..."
-    if not llm_is_loaded:
-        return "No LLM has been loaded yet ..."
-    print("Start generating text...")
-    generated_text = llm(prompt, stream=False)
-    print("Done generating text :)")
-    
-    return generated_text
-
 def predict(message, history):
 
     if llm is None or not llm_is_loaded:
         return "No LLM has been loaded yet ..."
     
-    
     dialogue_history_to_format = history + [[message, ""]]
     messages = "".join(["".join(["\n<human>:"+item[0], "\n<bot>:"+item[1]])
                    for item in dialogue_history_to_format])
-    
-    
     
     print("Started generating text ...")    
     partial_message = ""
@@ -82,7 +66,6 @@ def gradio_app(models_path):
     # Initialize the llm. Will be chosen by the user
     global llm_is_loaded, llm
     llm, llm_is_loaded = None, False
-    #llm = load_model(model_name, model_type, gpu_layers)
 
     # Create a Gradio Chatbat Interface
     with gr.Blocks() as iface:
@@ -100,7 +83,7 @@ def gradio_app(models_path):
     iface.launch()
 
 
-
+### How to use this script : ###
 # python src/app/app_GGUF.py 
 # python src/app/app_GGUF.py "llama2" "llama-2-7b-chat.Q4_K_M.gguf"
 if __name__ == "__main__":
@@ -108,5 +91,5 @@ if __name__ == "__main__":
         path = sys.argv[2]
     else:
         path = "/home/pie2023/dataSSD/models"
-    # Launch the Gradio interface
+
     gradio_app(path)
