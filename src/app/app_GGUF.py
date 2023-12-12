@@ -3,14 +3,14 @@ from ctransformers import AutoModelForCausalLM
 import sys
 import os
 
-def load_model_list(path):
-    models = {}
+def load_available_models_paths(path):
+    models_paths = {}
     for root, dirs, files in os.walk(path):
         for file in files:
             if file.endswith(".gguf"):
                 file_path = os.path.join(root, file)
-                models[file] = file_path
-    return models
+                models_paths[file] = file_path
+    return models_paths
 
 def generate_text(prompt):
     global llm
@@ -26,7 +26,7 @@ def generate_text(prompt):
     return generated_text
 
 def load_model(model_name, gpu_layer):
-    MODEL_PATH = list_of_models[model_name]
+    MODEL_PATH = available_models_paths[model_name]
     global llm
     global ready
     
@@ -53,12 +53,12 @@ def load_model(model_name, gpu_layer):
 def gradio_app(models_path):
 
     # Load the model and its tokenizer
-    global list_of_models
-    list_of_models = load_model_list(models_path)
-    global llm
-    global ready
-    llm = None
-    ready = False
+    global available_models_paths
+    available_models_paths = load_available_models_paths(models_path)
+    
+    # Initialize the llm. Will be chosen by the user
+    global llm, ready
+    llm, ready = None, None
     #llm = load_model(model_name, model_type, gpu_layers)
 
     # Create a Gradio Chatbat Interface
@@ -73,7 +73,7 @@ def gradio_app(models_path):
                 description="Ask your Teacher Assistant to generate educational content",
             )
         with gr.Tab("option"):
-            model_Dd = gr.Dropdown(list_of_models.keys())
+            model_Dd = gr.Dropdown(available_models_paths.keys())
             sl1 = gr.Slider(0, 5000, step=1, info="nombre de layer sur le GPU")
             b1 = gr.Button("Load model")
 
