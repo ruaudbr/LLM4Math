@@ -80,6 +80,7 @@ def gradio_app(models_path):
             b1.click(load_model, inputs=[model_Dd, sl1], outputs=llm)
     
     # Launch Gradio Interface
+    print("Launching Gradio Interface...")
     iface.launch()
 
 
