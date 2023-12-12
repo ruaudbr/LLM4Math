@@ -1,5 +1,5 @@
 # Hugging-Face model ids
-models_id = {
+MODELS_ID = {
     ### Mistral-based ###
     "mistral7b_instruct": "mistralai/Mistral-7B-Instruct-v0.1",
     "mistral7b_orca": "Open-Orca/Mistral-7B-OpenOrca",
