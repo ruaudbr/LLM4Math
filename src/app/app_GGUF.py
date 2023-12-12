@@ -34,7 +34,7 @@ def load_model(model_name, gpu_layer):
         model_type = "llama2"
     else:
         model_type = "mistral"
-    print(f"Loading model from {MODEL_PATH}, type {model_type}")
+    print(f"Loading {model_type}-type model from : \n {MODEL_PATH}")
     llm_is_loaded = False
     try:
         llm = AutoModelForCausalLM.from_pretrained(
@@ -42,12 +42,12 @@ def load_model(model_name, gpu_layer):
             model_type=model_type,
             gpu_layers=gpu_layer
         )
-        print("done loading model")
+        print("Model loaded successfully :)")
         llm_is_loaded = True
         return llm
     
     except Exception as e:
-        print(f"Error loading model: {e}")
+        print(f"Error loading model : {e}")
         return None
 
 def gradio_app(models_path):
