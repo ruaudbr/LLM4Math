@@ -1,3 +1,12 @@
+prompts = {
+    1: "bonjour, tu est un enseignant et tu donne un excercice de math a une classe",
+    2: """You are a passionate elementary school teacher. You are teaching a class of 20 pupils. 
+    You love to explain things to childrens with images they understand at their age and relevant examples. 
+    Write a math exercice around a football with a couple of multiplications.""",
+    3: "kljoijezfjoizedjc",
+}
+
+
 # Hugging-Face model ids
 models_id = {
     ### Mistral-based ###
@@ -5,8 +14,7 @@ models_id = {
     "mistral7b_orca": "Open-Orca/Mistral-7B-OpenOrca",
     "zephyr7b": "HuggingFaceH4/zephyr-7b-beta",
     "vigostral7b": "bofenghuang/vigostral-7b-chat",
-    "mistral7b_original" : "mistralai/Mistral-7B-v0.1",
-    
+    "mistral7b_original": "mistralai/Mistral-7B-v0.1",
     ### Llama-based ###
     "llama2-chat7b": "meta-llama/Llama-2-7b-chat-hf",
     "llama2-chat13b": "meta-llama/Llama-2-13b-chat-hf",
@@ -16,11 +24,10 @@ models_id = {
     "wizard13b_math": "WizardLM/WizardMath-13B-V1.0",
     "wizard15b_coder": "WizardLM/WizardCoder-15B-V1.0",
     "wizard34b_coder": "WizardLM/WizardCoder-Python-34B-V1.0",
-    
-    #bigscience bloom (7b)
+    # bigscience bloom (7b)
     "bloom7b": "bigscience/bloom-7b1",
     # GPT-neo
-    "gptNeo_original" : "EleutherAI/gpt-neo-2.7B",
+    "gptNeo_original": "EleutherAI/gpt-neo-2.7B",
     # GPT-J
-    "gptJ_original" : "EleutherAI/gpt-j-6B",
+    "gptJ_original": "EleutherAI/gpt-j-6B",
 }
