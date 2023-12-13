@@ -2,7 +2,7 @@
 
 Script pour faire tourner un LLM quantifié sur une série de prompts et récupérer ses réponses.
 
-`python ./generate.py`
+`python ./generate.py model_name precision`
 
 Il faut écrire le nom d'un modèle valide
 puis selectionner la précision souhaitée:
@@ -16,6 +16,8 @@ Les prompts utilisées sont écrites dans le fichier `constants.py`.
 Les prompts sont traitées indépendemment les unes des autres.
 
 \! Ce n'est pas un chat \!
+
+Les réponses seront stockées dans un .json avec les prompts associées.
 
 ## playground.py
 
