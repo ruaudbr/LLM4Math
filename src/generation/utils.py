@@ -23,7 +23,6 @@ def load_model(model_id, precision):
         )
         tokenizer = AutoTokenizer.from_pretrained(model_id)
 
-
     # quantization to int8  (don't want to mess with "device" here, to be studied)
     # 8bit, 8 bits = 1 byte --> #paramsInB * 1 = RAM needed to load full model
     elif precision == "8":
@@ -35,7 +34,6 @@ def load_model(model_id, precision):
             load_in_8bit=True,  # 8bits here
         )
         tokenizer = AutoTokenizer.from_pretrained(model_id)
-
 
     # half-precision, 16 bits = 2 bytes --> #paramsInB * 2 = RAM needed to load full model
     elif precision == "16":
@@ -50,7 +48,6 @@ def load_model(model_id, precision):
         )  # .to(device)
         tokenizer = AutoTokenizer.from_pretrained(model_id)  # .to(device)
 
-
     # full-precision, 32bits = 4 bytes --> #paramsInB * 4 = RAM needed to load full model
     elif precision == "32":
         print("Loading model in full-precision")
@@ -62,5 +59,5 @@ def load_model(model_id, precision):
             torch_dtype=torch.float32,  # full-precision here
         ).to(device)
         tokenizer = AutoTokenizer.from_pretrained(model_id)  # .to(device)
-        
+
     return tokenizer, model
