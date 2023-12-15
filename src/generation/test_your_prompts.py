@@ -14,10 +14,10 @@ if len(arg) != 4:
 model_name, precision = arg[1], arg[2]
 
 ###### Model name ######
+
 if model_name not in MODELS_ID:
-    raise Exception(
-        f"Invalide model name :(\nValid model names are : \n {MODELS_ID.keys()}"
-    )
+    model_names = "\n".join(MODELS_ID.keys())
+    raise Exception(f"Invalide model name :(\nValid model names are : \n{model_names}")
 model_id = MODELS_ID[model_name]
 
 ###### Precision ######
@@ -39,7 +39,7 @@ for prompt_idx, prompt in tqdm(PROMPTS.items(), desc="Prompt"):
     outputs = model.generate(
         **inputs,
         # temperature=1.1,
-        do_sample=False,
+        do_sample=True,
         top_k=5,
         top_p=10,
         num_return_sequences=1,
