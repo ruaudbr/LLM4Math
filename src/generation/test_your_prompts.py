@@ -43,6 +43,7 @@ prompts = prompts_df[prompt_col_name].to_list()
 
 ###### Generating ######
 answers = []
+print(f"Generating answers")
 for prompt in tqdm(prompts, desc="Prompt"):
     prompt = prompt.strip()
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
@@ -64,6 +65,7 @@ for prompt in tqdm(prompts, desc="Prompt"):
 
 
 ###### Saving prompts:answers into a .csv ######
+print(f"Saving the answers")
 assert len(prompts) == len(answers), "The number of prompts and answers is not the same"
 prompts_df["answer"] = answers
 ANSWERS_FOLDER = "./src/generation/generated_answers/"
