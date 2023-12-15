@@ -4,6 +4,8 @@ from threading import Thread
 import sys
 import os
 
+from utils import load_quantized_model
+
 
 def load_available_models_paths(path):
     models_paths = {}
@@ -15,24 +17,19 @@ def load_available_models_paths(path):
     return models_paths
 
 
-def load_tokenizer_and_model(model_name):
-    MODEL_PATH = available_models_paths[model_name]
-
+def load_tokenizer_and_model(model_name, precision_chosen):
     global tokenizer, llm, llm_is_loaded
 
-    if "llama" in MODEL_PATH:
-        model_type = "llama2"
-    else:
-        model_type = "mistral"
-    print(f"Loading {model_type}-type model from : \n {MODEL_PATH}")
-
+    model_id = available_model_ids[model_name]
+    print(f"Loading {model_name} model from hf at {model_id}")
     try:
+        tokenizer, model = load_quantized_model(model_id, precision_chosen)
         model = AutoModelForCausalLM.from_pretrained(
-            MODEL_PATH,
+            model_id,
             low_cpu_mem_usage=True,
             device_map="cuda:0",
         )
-        tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
         print("Model loaded successfully :)")
         llm_is_loaded = True
         return tokenizer, model
@@ -84,8 +81,10 @@ def predict(message, history):
 
 def gradio_app(models_path):
     # Load the model and its tokenizer
-    global available_models_paths
-    available_models_paths = load_available_models_paths(models_path)
+    global available_model_ids
+    available_model_ids = load_available_models_paths(
+        models_path
+    )  # TODO: change this to fetch interesting model ids
 
     # Initialize the llm. Will be chosen by the user
     global tokenizer, llm, llm_is_loaded
@@ -97,11 +96,12 @@ def gradio_app(models_path):
             gr.ChatInterface(predict)
 
         with gr.Tab("Model choice and Options"):
-            model_name_chosen = gr.Dropdown(available_models_paths.keys())
+            model_name_chosen = gr.Dropdown(available_model_ids.keys())
+            precision_chosen = gr.Dropdown(["4", "8", "16", "32"])
             b1 = gr.Button("Load model")
             b1.click(
                 load_tokenizer_and_model,
-                inputs=[model_name_chosen],
+                inputs=[model_name_chosen, precision_chosen],
                 outputs=(tokenizer, llm),
             )
 
