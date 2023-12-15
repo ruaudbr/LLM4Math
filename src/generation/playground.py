@@ -1,3 +1,5 @@
+from transformers import TextStreamer
+
 # Hugging-Face models ids
 from constants import MODELS_ID
 from utils import load_model
@@ -42,8 +44,10 @@ while still_generating:
         still_generating = False
     else:
         inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-        outputs = model.generate(
+        streamer = TextStreamer(tokenizer, skip_special_tokens=True)
+        _ = model.generate(
             **inputs,
+            streamer=streamer,
             # temperature=1.1, # >1 augmente la diversité/surprise sur la génération (applatie la distribution sur le next token), <1 diminue la diversité de la génération (rend la distribution + spiky)
             do_sample=True,
             top_k=5,
@@ -51,10 +55,9 @@ while still_generating:
             num_return_sequences=1,
             repetition_penalty=1.5,  # pour éviter les répétitions, je suis pas au clair avec commment il marche celui-là mais important à priori
             eos_token_id=tokenizer.eos_token_id,
+            pad_token_id=tokenizer.eos_token_id,
             max_length=1024,
         )
-        print(tokenizer.decode(outputs[0], skip_special_tokens=True))
-
 
 ###
 # chat = True
