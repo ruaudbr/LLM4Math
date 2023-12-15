@@ -30,7 +30,7 @@ tokenizer, model = load_model(model_id, precision)
 
 
 ###### Fetching the prompts ######
-PROMPTS_FOLDER = "prompts/"
+PROMPTS_FOLDER = "./src/generation/prompts/"
 file_name = arg[3]
 try:
     prompts_df = pd.read_csv(PROMPTS_FOLDER + file_name)
@@ -43,7 +43,7 @@ prompts = prompts_df[prompt_col_name].to_list()
 
 ###### Generating ######
 answers = []
-for prompt_idx, prompt in tqdm(prompts, desc="Prompt"):
+for prompt in tqdm(prompts, desc="Prompt"):
     prompt = prompt.strip()
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
 
@@ -52,11 +52,12 @@ for prompt_idx, prompt in tqdm(prompts, desc="Prompt"):
         # temperature=1.1,
         do_sample=True,
         top_k=5,
-        top_p=10,
+        top_p=20,
         num_return_sequences=1,
         repetition_penalty=1.5,
         eos_token_id=tokenizer.eos_token_id,
-        max_length=1024,
+        pad_token_id=tokenizer.eos_token_id,
+        max_length=2048,
     )
     answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
     answers.append(answer)
@@ -65,6 +66,6 @@ for prompt_idx, prompt in tqdm(prompts, desc="Prompt"):
 ###### Saving prompts:answers into a .csv ######
 assert len(prompts) == len(answers), "The number of prompts and answers is not the same"
 prompts_df["answer"] = answers
-ANSWERS_FOLDER = "generated_answers/"
+ANSWERS_FOLDER = "./src/generation/generated_answers/"
 answers_file_name = f"answers_{model_name}_{precision}.csv"
 prompts_df.to_csv(ANSWERS_FOLDER + answers_file_name, index=False)
