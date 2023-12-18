@@ -1,12 +1,3 @@
-PROMPTS = {
-    1: "bonjour, tu est un enseignant et tu donne un excercice de math a une classe",
-    2: """You are a passionate elementary school teacher. You are teaching a class of 20 pupils. 
-    You love to explain things to childrens with images they understand at their age and relevant examples. 
-    Write a math exercice around a football with a couple of multiplications.""",
-    3: "kljoijezfjoizedjc",
-}
-
-
 # Hugging-Face model ids
 MODELS_ID = {
     ### Mistral-based ###

@@ -1,31 +1,32 @@
-# Hugging-Face models ids 
+from transformers import TextStreamer
+
+# Hugging-Face models ids
 from constants import MODELS_ID
 from utils import load_model
 
 
 ###### Choose your model with its name ######
 model_not_chosen = True
-print(f"The available models are : \n {MODELS_ID.keys()}")
+model_names = "\n".join(MODELS_ID.keys())
+print(f"The available models are : \n{model_names}")
 while model_not_chosen:
-    model_name = input("Please choose a model name from the list above") 
+    model_name = input("Please choose a model name from the list above\nYour choice : ")
     if model_name in MODELS_ID:
         model_not_chosen = False
     else:
-        print("Unkown model :(. Please choose a model name from the list above.")
+        print("Unkown model :(")
 model_id = MODELS_ID[model_name]
 
 
 ###### Choose your quantization config ######
 precision_not_chosen = True
 while precision_not_chosen:
-    precision = input("Select a precision : 4, 8, 16 or 32 ")
-    
+    precision = input("Select a precision : 4, 8, 16 or 32\nYour choice : ")
+
     if precision in ["4", "8", "16", "32"]:
         precision_not_chosen = False
     else:
-        print("Please choose a valid precision : 4, 8, 16 or 32")
-
-
+        print("Not a valid precision :(")
 
 
 print(f"Loading model : {model_id}")
@@ -36,7 +37,6 @@ tokenizer, model = load_model(model_id, precision)
 print("model ready")
 still_generating = True
 while still_generating:
-    
     prompt = input("input the prompt (!help) : \n")
     if prompt == "!help":
         print("!exit to close the model")
@@ -44,19 +44,20 @@ while still_generating:
         still_generating = False
     else:
         inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-        outputs = model.generate(
+        streamer = TextStreamer(tokenizer, skip_special_tokens=True)
+        _ = model.generate(
             **inputs,
+            streamer=streamer,
             # temperature=1.1, # >1 augmente la diversité/surprise sur la génération (applatie la distribution sur le next token), <1 diminue la diversité de la génération (rend la distribution + spiky)
-            do_sample=False,
+            do_sample=True,
             top_k=5,
             top_p=10,  # le token suivant est tiré du top 'top_p' de la distribution uniquement
             num_return_sequences=1,
             repetition_penalty=1.5,  # pour éviter les répétitions, je suis pas au clair avec commment il marche celui-là mais important à priori
             eos_token_id=tokenizer.eos_token_id,
+            pad_token_id=tokenizer.eos_token_id,
             max_length=1024,
         )
-        print(tokenizer.decode(outputs[0], skip_special_tokens=True))
-
 
 ###
 # chat = True
