@@ -16,6 +16,8 @@ Sur la machine 192.168.1.66,
 L'environnement python à utiliser se trouve dans ~/dataSSD/venv/bin
 vous pouvez l'activer avec la commande `source ~/dataSSD/venv/bin/activate`.
 
+Les commandes de base facile à lancé sont visible avec `make help`
+
 ------------
 
     ├── README.md          <- The top-level README for developers using this project.
