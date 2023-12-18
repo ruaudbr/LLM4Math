@@ -69,5 +69,5 @@ print(f"Saving the answers")
 assert len(prompts) == len(answers), "The number of prompts and answers is not the same"
 prompts_df["answer"] = answers
 ANSWERS_FOLDER = "./src/generation/generated_answers/"
-answers_file_name = f"answers_{model_name}_{precision}.csv"
+answers_file_name = f"answers_{model_name}_{precision}_{file_name}"
 prompts_df.to_csv(ANSWERS_FOLDER + answers_file_name, index=False)
