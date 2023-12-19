@@ -3,7 +3,7 @@ from tqdm import tqdm
 
 import pandas as pd
 
-from constants import MODELS_ID
+from constants import MODELS_ID, IS_CHAT
 from utils import load_model
 
 # Parsing aguments
@@ -46,7 +46,14 @@ answers = []
 print(f"Generating answers")
 for prompt in tqdm(prompts, desc="Prompt"):
     prompt = prompt.strip()
-    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+
+    if IS_CHAT[model_name]:
+        messages = [{"role": "user", "content": prompt}]
+        inputs = tokenizer.apply_chat_template(messages, return_tensors="pt").to(
+            model.device
+        )
+    else:
+        inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
 
     outputs = model.generate(
         **inputs,
