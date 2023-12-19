@@ -37,6 +37,7 @@ def load_quantized_model(model_id, precision):
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
             torch_dtype=torch.float16,  # half-precision here
+            use_flash_attention=True,
             device_map="auto",  # accelerate dispatches layers to ram, vram or disk
         )
         tokenizer = AutoTokenizer.from_pretrained(model_id)
@@ -50,6 +51,7 @@ def load_quantized_model(model_id, precision):
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
             torch_dtype=torch.float32,  # full-precision here
+            use_flash_attention=True,
             device_map="auto",  # accelerate dispatches layers to ram, vram or disk
         )
         tokenizer = AutoTokenizer.from_pretrained(model_id)
