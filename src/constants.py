@@ -22,3 +22,15 @@ MODELS_ID = {
     # GPT-J
     "gptJ_original": "EleutherAI/gpt-j-6B",
 }
+
+IS_CHAT = {
+    ### Mistral-based ###
+    "mistral7b_instruct": True,
+    "mistral7b_original": False,
+    ### Llama-based ###
+    "llama2-chat7b": True,
+    "llama2-chat13b": True,
+}
+
+
+DEFAULT_CACHE = "/home/pie2023/dataSSD/models_transformers"

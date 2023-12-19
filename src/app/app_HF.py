@@ -4,7 +4,7 @@ from threading import Thread
 import sys
 import os
 
-from utils import load_quantized_model
+from utils import load_model
 
 
 def load_available_models_paths(path):
@@ -23,7 +23,7 @@ def load_tokenizer_and_model(model_name, precision_chosen):
     model_id = available_model_ids[model_name]
     print(f"Loading {model_name} model from hf at {model_id}")
     try:
-        tokenizer, model = load_quantized_model(model_id, precision_chosen)
+        tokenizer, model = load_model(model_id, precision_chosen)
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
             low_cpu_mem_usage=True,

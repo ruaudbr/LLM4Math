@@ -1,8 +1,12 @@
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+from constants import DEFAULT_CACHE
+
+DEFAULT_CACHE = "/home/pie2023/dataSSD/models_transformers"
 
 
-def load_quantized_model(model_id, precision):
+def load_model(model_id, precision, cache_dir=DEFAULT_CACHE):
     # quantization to int4 (don't want to mess with "device" here, to be studied)
     # 4bit, 4 bits = 1/2 byte --> #paramsInB * 1/2 = RAM needed to load full model
     if precision == "4":
@@ -12,6 +16,7 @@ def load_quantized_model(model_id, precision):
             load_in_4bit=True,
             use_flash_attention=True,
             device_map="auto",  # accelerate dispatches layers to ram, vram or disk
+            cache_dir=cache_dir,
         )
         tokenizer = AutoTokenizer.from_pretrained(model_id)
 
@@ -25,6 +30,7 @@ def load_quantized_model(model_id, precision):
             load_in_8bit=True,
             use_flash_attention=True,
             device_map="auto",  # accelerate dispatches layers to ram, vram or disk
+            cache_dir=cache_dir,
         )
         tokenizer = AutoTokenizer.from_pretrained(model_id)
 
@@ -39,6 +45,7 @@ def load_quantized_model(model_id, precision):
             torch_dtype=torch.float16,  # half-precision here
             use_flash_attention=True,
             device_map="auto",  # accelerate dispatches layers to ram, vram or disk
+            cache_dir=cache_dir,
         )
         tokenizer = AutoTokenizer.from_pretrained(model_id)
 
@@ -53,6 +60,7 @@ def load_quantized_model(model_id, precision):
             torch_dtype=torch.float32,  # full-precision here
             use_flash_attention=True,
             device_map="auto",  # accelerate dispatches layers to ram, vram or disk
+            cache_dir=cache_dir,
         )
         tokenizer = AutoTokenizer.from_pretrained(model_id)
 

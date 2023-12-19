@@ -1,10 +1,10 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 
-DEFAULT_CACHE = "/home/pie2023/dataSSD/models_transformers"
+from constants import DEFAULT_CACHE
 
 
-def load_model(model_id, precision, cache_dir = DEFAULT_CACHE):
+def load_model(model_id, precision, cache_dir=DEFAULT_CACHE):
     # quantization to int4 (don't want to mess with "device" here, to be studied)
     # 4bit, 4 bits = 1/2 byte --> #paramsInB * 1/2 = RAM needed to load full model
     if precision == "4":
@@ -20,11 +20,11 @@ def load_model(model_id, precision, cache_dir = DEFAULT_CACHE):
         # Load quantized model
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
-            quantization_config=bnb_config, 
-            cache_dir = cache_dir,
+            quantization_config=bnb_config,
+            cache_dir=cache_dir,
             # device_map="auto",
         )
-        #tokenizer = AutoTokenizer.from_pretrained(model_id)
+        # tokenizer = AutoTokenizer.from_pretrained(model_id)
 
     # quantization to int8  (don't want to mess with "device" here, to be studied)
     # 8bit, 8 bits = 1 byte --> #paramsInB * 1 = RAM needed to load full model
@@ -34,10 +34,10 @@ def load_model(model_id, precision, cache_dir = DEFAULT_CACHE):
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
             # device_map="auto",
-            load_in_8bit=True, 
-            cache_dir = cache_dir,  # 8bits here
+            load_in_8bit=True,
+            cache_dir=cache_dir,  # 8bits here
         )
-        #tokenizer = AutoTokenizer.from_pretrained(model_id)
+        # tokenizer = AutoTokenizer.from_pretrained(model_id)
 
     # half-precision, 16 bits = 2 bytes --> #paramsInB * 2 = RAM needed to load full model
     elif precision == "16":
@@ -48,10 +48,10 @@ def load_model(model_id, precision, cache_dir = DEFAULT_CACHE):
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
             torch_dtype=torch.float16,  # half-precision here
-            device_map="auto", 
-            cache_dir = cache_dir,
+            device_map="auto",
+            cache_dir=cache_dir,
         )  # .to(device)
-        #tokenizer = AutoTokenizer.from_pretrained(model_id)  # .to(device)
+        # tokenizer = AutoTokenizer.from_pretrained(model_id)  # .to(device)
 
     # full-precision, 32bits = 4 bytes --> #paramsInB * 4 = RAM needed to load full model
     elif precision == "32":
@@ -61,11 +61,12 @@ def load_model(model_id, precision, cache_dir = DEFAULT_CACHE):
         # load model
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
-            torch_dtype=torch.float32, 
-            cache_dir = cache_dir,  # full-precision here
+            torch_dtype=torch.float32,
+            cache_dir=cache_dir,  # full-precision here
         ).to(device)
-    
-    tokenizer = AutoTokenizer.from_pretrained(model_id, 
-            cache_dir = cache_dir)  # .to(device)
+
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_id, cache_dir=cache_dir
+    )  # .to(device)
 
     return tokenizer, model
