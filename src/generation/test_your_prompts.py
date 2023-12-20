@@ -58,9 +58,10 @@ for prompt in tqdm(prompts, desc="Prompt"):
         )
     else:
         inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+        inputs = inputs["input_ids"], inputs["attention_mask"]
 
     outputs = model.generate(
-        **inputs,
+        inputs,
         # temperature=1.1,
         do_sample=True,
         top_k=5,
