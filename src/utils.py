@@ -12,7 +12,9 @@ def load_model(model_id, precision, cache_dir=DEFAULT_CACHE):
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
             load_in_4bit=True,
-            use_flash_attention=True,
+            # use_flash_attn=True,
+            # use_flash_attention_2=True,
+            # attn_implementation="flash_attention_2",
             device_map="auto",  # accelerate dispatches layers to ram, vram or disk
             cache_dir=cache_dir,
         )
