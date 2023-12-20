@@ -3,8 +3,6 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from constants import DEFAULT_CACHE
 
-DEFAULT_CACHE = "/home/pie2023/dataSSD/models_transformers"
-
 
 def load_model(model_id, precision, cache_dir=DEFAULT_CACHE):
     # quantization to int4 (don't want to mess with "device" here, to be studied)
