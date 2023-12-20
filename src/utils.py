@@ -1,5 +1,5 @@
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 
 from constants import DEFAULT_CACHE
 
@@ -9,10 +9,18 @@ def load_model(model_id, precision, cache_dir=DEFAULT_CACHE):
     # 4bit, 4 bits = 1/2 byte --> #paramsInB * 1/2 = RAM needed to load full model
     if precision == "4":
         print("Loading model in 4 bits")
+        nf4_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_compute_dtype=torch.bfloat16,
+        )
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
-            load_in_4bit=True,
-            bnb_4bit_compute_dtype=torch.bfloat16,
+            # load_in_4bit=True,
+            # bnb_4bit_use_double_quant=True,
+            # bnb_4bit_compute_dtype=torch.bfloat16,
+            quantization_config=nf4_config,
             # use_flash_attn=True,
             # use_flash_attention_2=True,
             # attn_implementation="flash_attention_2",
