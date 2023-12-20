@@ -12,6 +12,7 @@ def load_model(model_id, precision, cache_dir=DEFAULT_CACHE):
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
             load_in_4bit=True,
+            bnb_4bit_compute_dtype=torch.bfloat16,
             # use_flash_attn=True,
             # use_flash_attention_2=True,
             # attn_implementation="flash_attention_2",
@@ -28,7 +29,8 @@ def load_model(model_id, precision, cache_dir=DEFAULT_CACHE):
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
             load_in_8bit=True,
-            use_flash_attention=True,
+            bnb_4bit_compute_dtype=torch.bfloat16,
+            # use_flash_attention=True,
             device_map="auto",  # accelerate dispatches layers to ram, vram or disk
             cache_dir=cache_dir,
         )
@@ -43,7 +45,7 @@ def load_model(model_id, precision, cache_dir=DEFAULT_CACHE):
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
             torch_dtype=torch.float16,  # half-precision here
-            use_flash_attention=True,
+            # use_flash_attention=True,
             device_map="auto",  # accelerate dispatches layers to ram, vram or disk
             cache_dir=cache_dir,
         )
@@ -58,7 +60,7 @@ def load_model(model_id, precision, cache_dir=DEFAULT_CACHE):
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
             torch_dtype=torch.float32,  # full-precision here
-            use_flash_attention=True,
+            # use_flash_attention=True,
             device_map="auto",  # accelerate dispatches layers to ram, vram or disk
             cache_dir=cache_dir,
         )
