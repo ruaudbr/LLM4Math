@@ -1,6 +1,8 @@
 # Hugging-Face model ids
 MODELS_ID = {
+    "Yi34b_chat": "01-ai/Yi-34b-Chat",
     ### Mistral-based ###
+    "mixtral7b_instruct": "mistralai/Mixtral-8x7B-Instruct-v0.1",
     "mistral7b_instruct": "mistralai/Mistral-7B-Instruct-v0.1",
     "mistral7b_orca": "Open-Orca/Mistral-7B-OpenOrca",
     "zephyr7b": "HuggingFaceH4/zephyr-7b-beta",
@@ -24,7 +26,9 @@ MODELS_ID = {
 }
 
 IS_CHAT = {
+    "Yi34b_chat": True,
     ### Mistral-based ###
+    "mixtral7b_instruct": True,
     "mistral7b_instruct": True,
     "mistral7b_original": False,
     ### Llama-based ###
