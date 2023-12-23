@@ -107,6 +107,6 @@ if __name__ == "__main__":
     if len(sys.argv) >= 3:
         path = sys.argv[2]
     else:
-        path = "/home/pie2023/dataSSD/models"
+        path = "/home/pie2023/dataSSD/gguf_models"
 
     gradio_app(path)
