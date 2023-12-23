@@ -2,6 +2,10 @@ import gradio as gr
 from ctransformers import AutoModelForCausalLM
 import sys
 import os
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger()
 
 
 def load_available_models_paths(path):
@@ -23,7 +27,8 @@ def load_model(model_name, gpu_layer):
         model_type = "llama2"
     else:
         model_type = "mistral"
-    print(f"Loading {model_type}-type model from : \n {MODEL_PATH}")
+
+    logger.info(f"Loading {model_type}-type model from : \n {MODEL_PATH}")
 
     try:
         llm = AutoModelForCausalLM.from_pretrained(
@@ -31,12 +36,12 @@ def load_model(model_name, gpu_layer):
             model_type=model_type,
             gpu_layers=gpu_layer,
         )
-        print("Model loaded successfully :)")
+        logger.info("Model loaded successfully :)")
         llm_is_loaded = True
         return llm
 
     except Exception as e:
-        print(f"Error loading model : {e}")
+        logger.info(f"Error loading model : {e}")
         return None
 
 
@@ -51,14 +56,14 @@ def predict(message, history):
             for item in dialogue_history_to_format
         ]
     )
-
-    print("Started generating text ...")
+    logger.info("Started generating text ...")
+    # print("Started generating text ...")
     partial_message = ""
     for new_token in llm(messages, stream=True):
         if new_token != "<":
             partial_message += new_token
             yield partial_message
-    print("Done generating text :)")
+    logger.info("Done generating text :)")
 
 
 def gradio_app(models_path):
@@ -91,7 +96,7 @@ def gradio_app(models_path):
             )
 
     # Launch Gradio Interface
-    print("Launching Gradio Interface...")
+    logger.info("Launching Gradio Interface...")
     iface.launch()
 
 
