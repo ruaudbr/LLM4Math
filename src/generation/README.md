@@ -1,23 +1,24 @@
-## generate.py
+## test_your_prompts.py
 
-Script pour faire tourner un LLM quantifié sur une série de prompts et récupérer ses réponses.
+Script pour faire tourner un LLM sur une série de prompts. 
 
-`python ./generate.py model_name precision`
+Le LLM sera quantifié à la précision indiquée lors de l'appel du script. Les prompts seront lues depuis .csv dans le dossier `./prompts`. .
 
-Il faut écrire le nom d'un modèle valide
-puis selectionner la précision souhaitée:
+Comment appeler ce script ?
+
+`python ./generate.py model_name precision prompt_file_name`
+
+Il faut écrire le nom d'un modèle valide puis selectionner la précision souhaitée pour la quantification du modèle :
 - '4' = 4 bits;
 - '8' = 8 bits;
 - '16' = 16 bits (half-precision);
 - '32' = 32 bits (full-precision).
 
-Les prompts utilisées sont écrites dans le fichier `constants.py`.
+Les prompts utilisées sont écrites dans un fichier csv placé dans le dossier `./prompts`.
 
 Les prompts sont traitées indépendemment les unes des autres.
 
-\! Ce n'est pas un chat \!
-
-Les réponses seront stockées dans un .json avec les prompts associées.
+Les réponses générées seront écrites dans un fichier csv qui reprendra le nom du fichier lu en entrée et sera placé dans le dossier `./generated_answers`.
 
 ## playground.py
 
