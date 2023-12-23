@@ -2,11 +2,11 @@
 
 Script pour faire tourner un LLM sur une série de prompts. 
 
-Le LLM sera quantifié à la précision indiquée lors de l'appel du script. Les prompts seront lues depuis .csv dans le dossier `./prompts`. .
+Le LLM sera quantifié à la précision indiquée lors de l'appel du script. Les prompts seront lues depuis .csv dans le dossier `./prompts`.
 
-Comment appeler ce script ?
+La commande pour appeler ce script depuis ce dossier :
 
-`python ./generate.py model_name precision prompt_file_name`
+`python ./generate.py model_name precision input_prompts_file_name`
 
 Il faut écrire le nom d'un modèle valide puis selectionner la précision souhaitée pour la quantification du modèle :
 - '4' = 4 bits;
@@ -14,17 +14,15 @@ Il faut écrire le nom d'un modèle valide puis selectionner la précision souha
 - '16' = 16 bits (half-precision);
 - '32' = 32 bits (full-precision).
 
-Les prompts utilisées sont écrites dans un fichier csv placé dans le dossier `./prompts`.
+Les prompts sont à écrire dans un fichier csv placé dans le dossier `./prompts`.
 
-Les prompts sont traitées indépendemment les unes des autres.
+Les prompts seront traitées indépendemment les unes des autres.
 
 Les réponses générées seront écrites dans un fichier csv qui reprendra le nom du fichier lu en entrée et sera placé dans le dossier `./generated_answers`.
 
 ## playground.py
 
-Traduction du notebook intial en script python.
-
-Il permet de tester un modèle.
+Script permettant de tester simplement un modèle
 
 `python ./playground.py`
 
