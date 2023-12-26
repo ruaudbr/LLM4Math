@@ -40,8 +40,9 @@ def gradio_app():
                 info="HF-models only",
             )
             gpu_layers_chosen = gr.Slider(
-                minimum=0,
-                maximum=50,
+                minimum=0.0,
+                maximum=50.0,
+                value=10.0,
                 step=1,
                 label="Choose the #layers to off-load on GPU",
                 info="GGUF-models only",
