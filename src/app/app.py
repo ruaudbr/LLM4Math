@@ -43,7 +43,7 @@ def gradio_app():
                 minimum=0,
                 maximum=50,
                 step=1,
-                label="Choose the #layers to off-load on GPU"
+                label="Choose the #layers to off-load on GPU",
                 info="GGUF-models only",
             )
             b1 = gr.Button("Load model")
