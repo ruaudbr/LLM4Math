@@ -27,7 +27,7 @@ def gradio_app():
 
     with gr.Blocks() as iface:
         # create an option menu to choose the model to load
-        with gr.Accordion("Model choice and Options"):
+        with gr.Accordion("Model choice and options"):
             model_name_chosen = gr.Dropdown(
                 choices=MODEL_NAMES,
                 value=DEFAULT_MODEL,
@@ -36,13 +36,15 @@ def gradio_app():
             precision_chosen = gr.Dropdown(
                 choices=PRECISIONS,
                 value=DEFAULT_PRECISION,
-                label="Choose a quantization precision (HF-models only)",
+                label="Choose a quantization precision",
+                info="HF-models only",
             )
             gpu_layers_chosen = gr.Slider(
                 minimum=0,
                 maximum=50,
                 step=1,
-                info="#layers to off-load on GPU (GGUF-models only)",
+                label="Choose the #layers to off-load on GPU"
+                info="GGUF-models only",
             )
             b1 = gr.Button("Load model")
             b1.click(
