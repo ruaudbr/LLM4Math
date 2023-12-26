@@ -16,23 +16,15 @@ def load_available_models_paths(path):
 
 
 def load_tokenizer_and_model(model_name):
-    MODEL_PATH = available_models_paths[model_name]
 
     global tokenizer, llm, llm_is_loaded
-
-    if "llama" in MODEL_PATH:
-        model_type = "llama2"
-    else:
-        model_type = "mistral"
-    print(f"Loading {model_type}-type model from : \n {MODEL_PATH}")
-
     try:
         model = AutoModelForCausalLM.from_pretrained(
-            MODEL_PATH,
+            model_name,
             low_cpu_mem_usage=True,
             device_map="cuda:0",
         )
-        tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
         print("Model loaded successfully :)")
         llm_is_loaded = True
         return tokenizer, model
@@ -43,6 +35,8 @@ def load_tokenizer_and_model(model_name):
 
 
 def predict(message, history):
+    global tokenizer, llm, llm_is_loaded
+
     if tokenizer is None or llm is None or not llm_is_loaded:
         return "No LLM has been loaded yet ..."
 
@@ -82,28 +76,20 @@ def predict(message, history):
     print("Done generating text :)")
 
 
-def gradio_app(models_path):
+def gradio_app(model_name):
     # Load the model and its tokenizer
     global available_models_paths
-    available_models_paths = load_available_models_paths(models_path)
+
 
     # Initialize the llm. Will be chosen by the user
     global tokenizer, llm, llm_is_loaded
     tokenizer, llm, llm_is_loaded = None, None, False
 
+    tokenizer, llm = load_tokenizer_and_model(model_name)
     # Create a Gradio Chatbat Interface
     with gr.Blocks() as iface:
         with gr.Tab("Teacher Assistant"):
             gr.ChatInterface(predict)
-
-        with gr.Tab("Model choice and Options"):
-            model_name_chosen = gr.Dropdown(available_models_paths.keys())
-            b1 = gr.Button("Load model")
-            b1.click(
-                load_tokenizer_and_model,
-                inputs=[model_name_chosen],
-                outputs=(tokenizer, llm),
-            )
 
     # Launch Gradio Interface
     print("Launching Gradio Interface...")
@@ -117,7 +103,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Retrieve the model name from the command line
-    model_name_arg = sys.argv[1]
+    model_name = sys.argv[1]
 
     # Launch the Gradio interface
-    gradio_app(model_name_arg)
+    gradio_app(model_name)
