@@ -2,7 +2,12 @@ import gradio as gr
 from ctransformers import AutoModelForCausalLM
 import sys
 import os
+
+import argparse
+
 import logging
+
+from constants import DEFAULT_MODELS_PATH
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -103,10 +108,16 @@ def gradio_app(models_path):
 ### How to use this script : ###
 # python src/app/app_GGUF.py
 # python src/app/app_GGUF.py "llama2" "llama-2-7b-chat.Q4_K_M.gguf"
-if __name__ == "__main__":
-    if len(sys.argv) >= 3:
-        path = sys.argv[2]
-    else:
-        path = "/home/pie2023/dataSSD/gguf_models"
 
-    gradio_app(path)
+# ---------------------------------------------------------------------------
+# CLI entrypoint
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Web-app to interact with a LLM")
+    parser.add_argument(
+        "--path",
+        type=str,
+        default=DEFAULT_MODELS_PATH,
+        help="Path to the folder containing the models",
+    )
+    args = parser.parse_args()
+    gradio_app(args.path)
