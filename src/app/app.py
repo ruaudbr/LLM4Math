@@ -25,15 +25,9 @@ def gradio_app():
     global model, tokenizer
     model, tokenizer = None, None
 
-    # Create a Gradio Chatbat Interface
     with gr.Blocks() as iface:
-        with gr.Tab("Teacher Assistant"):
-            gr.ChatInterface(
-                predict,
-                additional_inputs=[model_name_chosen],
-            )
-
-        with gr.Tab("Model choice and Options"):
+        # create an option menu to choose the model to load
+        with gr.Accordion("Model choice and Options"):
             model_name_chosen = gr.Dropdown(
                 choices=MODEL_NAMES,
                 value=DEFAULT_MODEL,
@@ -54,6 +48,12 @@ def gradio_app():
             b1.click(
                 load_model,
                 inputs=[model_name_chosen, precision_chosen, gpu_layers_chosen],
+            )
+        # Create a Gradio Chatbot Interface
+        with gr.Tab("Teacher Assistant"):
+            gr.ChatInterface(
+                predict,
+                additional_inputs=[model_name_chosen],
             )
 
     # Launch Gradio Interface
