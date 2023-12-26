@@ -1,7 +1,4 @@
-from utils.utils import load_available_models_paths
-
-MODELS_PATH = "/home/pie2023/dataSSD/models/"
-available_models_paths = load_available_models_paths(MODELS_PATH)
+import os
 
 MODELS_ID = {
     "Yi34b_chat": "01-ai/Yi-34b-Chat",
@@ -29,7 +26,26 @@ MODELS_ID = {
     "gptJ_original": "EleutherAI/gpt-j-6B",
 }
 
+
+# locally stored models
+def load_available_models_paths(path: str):
+    """
+    Load the locally available models' paths
+
+    Parameters:
+        path: path to the directory containing all models already available locally.
+    """
+    models_paths = {}
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            models_paths[file] = file_path
+    return models_paths
+
+
 # locally stored models + interesting models stored on the hub
+MODELS_PATH = "/home/pie2023/dataSSD/models/"
+available_models_paths = load_available_models_paths(MODELS_PATH)
 MODEL_NAMES = list(available_models_paths.keys()) + list(MODELS_ID.keys())
 DEFAULT_MODEL = "llama2-chat7b"
 

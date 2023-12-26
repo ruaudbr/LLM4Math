@@ -8,9 +8,10 @@ from transformers import (
     BitsAndBytesConfig,
     TextIteratorStreamer,
 )
+from threading import Thread
+
 from ctransformers import AutoModelForCausalLM as c_AutoModelForCausalLM
 
-from threading import Thread
 
 from utils.constants import (
     MODELS_ID,
@@ -29,21 +30,6 @@ logger = logging.getLogger()
 
 # -------------------------------------------
 # loading models functions
-def load_available_models_paths(path: str):
-    """
-    Load the locally available models' paths
-
-    Parameters:
-        path: path to the directory containing all models already available locally.
-    """
-    models_paths = {}
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            file_path = os.path.join(root, file)
-            models_paths[file] = file_path
-    return models_paths
-
-
 def load_model(
     model_name: str,
     precision_chosen: str,
