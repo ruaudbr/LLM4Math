@@ -45,8 +45,6 @@ def load_model(
         gpu_layer: number of layers to off-load on GPU. Default value or chosen by the user.
 
     """
-    global model, tokenizer
-
     if "gguf" in model_name:
         load_gguf_model(model_name, gpu_layer)
     else:
@@ -67,19 +65,17 @@ def load_gguf_model(
 
     global model, tokenizer
 
-    if "llama" in model_path:
-        model_type = "llama2"
-    else:
-        model_type = "mistral"
+    model_type = "llama" if "llama" in model_path else "mistral"
 
     logger.info(f"Loading {model_type}-type model from : \n {model_path}")
 
     try:
-        llm = c_AutoModelForCausalLM.from_pretrained(
+        model = c_AutoModelForCausalLM.from_pretrained(
             model_path,
             model_type=model_type,
             gpu_layers=gpu_layer,
         )
+        tokenizer = None
         logger.info("Model loaded successfully :)")
 
     except Exception as e:
@@ -101,7 +97,7 @@ def load_hf_model(
         cache_dir: path to the cache directory. Default value.
     """
 
-    global tokenizer, model
+    global model, tokenizer
     model_id = MODELS_ID[model_name]
 
     logger.info(f"Loading {model_name} at {model_id}")
