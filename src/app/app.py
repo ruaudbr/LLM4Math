@@ -10,7 +10,7 @@ from utils.constants import MODEL_NAMES, DEFAULT_MODEL, PRECISIONS, DEFAULT_PREC
 # ---------------------------------------------------------------------------
 # logger
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
+logger = logging.getLogger("app")
 
 
 # ---------------------------------------------------------------------------
@@ -25,7 +25,7 @@ def gradio_app():
     global model, tokenizer
     model, tokenizer = None, None
 
-    with gr.Blocks() as iface:
+    with gr.Blocks("soft") as iface:
         # create an option menu to choose the model to load
         with gr.Accordion("Model choice and options"):
             model_name_chosen = gr.Dropdown(

@@ -38,8 +38,9 @@ def load_available_models_paths(path: str):
     models_paths = {}
     for root, dirs, files in os.walk(path):
         for file in files:
-            file_path = os.path.join(root, file)
-            models_paths[file] = file_path
+            if "gguf" in file or "hf" in file:
+                file_path = os.path.join(root, file)
+                models_paths[file] = file_path
     return models_paths
 
 

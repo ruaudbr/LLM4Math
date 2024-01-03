@@ -1,4 +1,3 @@
-import os
 import logging
 
 import torch
@@ -25,8 +24,7 @@ from utils.constants import (
 
 # -------------------------------------------
 # logger
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
+logger = logging.getLogger("app")
 
 
 # -------------------------------------------
