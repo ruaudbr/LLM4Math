@@ -253,13 +253,14 @@ def generate_hf(
 
     streamer = TextIteratorStreamer(
         tokenizer,
-        # timeout=10.0,
+        timeout=10.0,
         skip_prompt=True,
         skip_special_tokens=True,
     )
 
     generate_kwargs = dict(
         input_tokens,
+        streamer=streamer,
         **GENERATION_CONFIG,
     )
 
