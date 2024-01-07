@@ -1,4 +1,4 @@
-## test_your_prompts.py
+# test_your_prompts.py
 
 Script pour faire tourner un LLM sur une série de prompts. 
 
@@ -20,7 +20,7 @@ Les prompts seront traitées indépendemment les unes des autres.
 
 Les réponses générées seront écrites dans un fichier csv qui reprendra le nom du fichier lu en entrée et sera placé dans le dossier `./generated_answers`.
 
-## playground.py
+# playground.py
 
 Script permettant de tester simplement un modèle
 
