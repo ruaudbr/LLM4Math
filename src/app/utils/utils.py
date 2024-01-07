@@ -13,7 +13,6 @@ from ctransformers import AutoModelForCausalLM as c_AutoModelForCausalLM
 
 
 from utils.constants import (
-    MODELS_PATH,
     MODELS_ID,
     DEFAULT_MODEL,
     DEFAULT_PRECISION,
@@ -54,6 +53,7 @@ def load_model(
 def load_gguf_model(
     model_name: str,
     gpu_layer: int = DEFAULT_MODEL,
+    cache_dir: str = DEFAULT_GGUF_CACHE,
 ):
     """
     Load a GGUF model through the ctransformers library.
@@ -61,10 +61,11 @@ def load_gguf_model(
     Parameters:
         model_name: name of the model file to load.
         gpu_layer: number of layers to off-load on GPU. Default value or chosen by the user.
+        cache_dir: path to the cache directory. Default value.
     """
 
     global model, tokenizer
-    model_path = MODELS_PATH + DEFAULT_GGUF_CACHE
+    model_path = cache_dir + model_name
     model_type = "llama" if "llama" in model_path else "mistral"
 
     logger.info(f"Loading {model_type}-type model from : \n {model_path}")

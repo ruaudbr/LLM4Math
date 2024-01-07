@@ -48,14 +48,15 @@ def load_available_models_paths(path: str):
 MODELS_PATH = "/home/pie2023/dataSSD/models/"
 available_models_paths = load_available_models_paths(MODELS_PATH)
 MODEL_NAMES = list(available_models_paths.keys()) + list(MODELS_ID.keys())
+
+DEFAULT_HF_CACHE = MODELS_PATH + "hf_models/"
+DEFAULT_GGUF_CACHE = MODELS_PATH + "gguf_models/"
+
 DEFAULT_MODEL = "llama2-chat-7b"
 
 PRECISIONS = ["4", "8", "16", "32"]
 DEFAULT_PRECISION = "4"
 
-# DEFAULT_CACHE = "/home/pie2023/dataSSD/models"
-DEFAULT_HF_CACHE = "/home/pie2023/dataSSD/models/hf_models"
-DEFAULT_GGUF_CACHE = "/home/pie2023/dataSSD/models/gguf_models"
 
 # hf generation config
 GENERATION_CONFIG = dict(
