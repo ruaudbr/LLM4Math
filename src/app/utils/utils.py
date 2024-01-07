@@ -18,6 +18,7 @@ from utils.constants import (
     DEFAULT_MODEL,
     DEFAULT_PRECISION,
     DEFAULT_HF_CACHE,
+    DEFAULT_GGUF_CACHE,
     GENERATION_CONFIG,
 )
 
@@ -63,7 +64,7 @@ def load_gguf_model(
     """
 
     global model, tokenizer
-    model_path = MODELS_PATH + "models_gguf/"
+    model_path = MODELS_PATH + DEFAULT_GGUF_CACHE
     model_type = "llama" if "llama" in model_path else "mistral"
 
     logger.info(f"Loading {model_type}-type model from : \n {model_path}")
@@ -157,6 +158,8 @@ def load_hf_model(
             cache_dir=cache_dir,
         )
 
+    logger.info("Model loaded successfully :)")
+
 
 # -------------------------------------------
 # generation functions
@@ -245,16 +248,20 @@ def generate_hf(
             for item in dialogue_history_to_format
         ]
     )
-    input_tokens = tokenizer(messages, return_tensors="pt").input_ids.cuda()
+    input_tokens = tokenizer(messages, return_tensors="pt").to("cuda")
+
     streamer = TextIteratorStreamer(
-        tokenizer, timeout=10.0, skip_prompt=True, skip_special_tokens=True
+        tokenizer,
+        # timeout=10.0,
+        skip_prompt=True,
+        skip_special_tokens=True,
     )
 
     generate_kwargs = dict(
         input_tokens,
-        streamer=streamer,
         **GENERATION_CONFIG,
     )
+
     t = Thread(target=model.generate, kwargs=generate_kwargs)
 
     logger.info("Started generating text ...")
