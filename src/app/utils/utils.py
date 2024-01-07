@@ -17,7 +17,7 @@ from utils.constants import (
     MODELS_ID,
     DEFAULT_MODEL,
     DEFAULT_PRECISION,
-    DEFAULT_CACHE,
+    DEFAULT_HF_CACHE,
     GENERATION_CONFIG,
 )
 
@@ -86,7 +86,7 @@ def load_gguf_model(
 def load_hf_model(
     model_name: str,
     precision: str = DEFAULT_PRECISION,
-    cache_dir: str = DEFAULT_CACHE,
+    cache_dir: str = DEFAULT_HF_CACHE,
 ):
     """
     Loads a model and its tokenizer from the hugging-face hub through the transformers library.
@@ -103,7 +103,10 @@ def load_hf_model(
     logger.info(f"Loading {model_name} at {model_id}")
     if precision == "4":
         logger.info("Loading model in 4 bits")
-        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_id,
+            cache_dir=cache_dir,
+        )
         nf4_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
@@ -118,7 +121,10 @@ def load_hf_model(
         )
     elif precision == "8":
         logger.info("Loading model in 8 bits")
-        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_id,
+            cache_dir=cache_dir,
+        )
         int8_config = BitsAndBytesConfig(
             load_in_8bit=True,
             bnb_8bit_compute_dtype=torch.bfloat16,

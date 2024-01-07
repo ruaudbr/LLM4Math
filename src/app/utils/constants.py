@@ -53,8 +53,8 @@ DEFAULT_MODEL = "llama2-chat-7b"
 PRECISIONS = ["4", "8", "16", "32"]
 DEFAULT_PRECISION = "4"
 
-DEFAULT_CACHE = "/home/pie2023/dataSSD/models"
-
+# DEFAULT_CACHE = "/home/pie2023/dataSSD/models"
+DEFAULT_HF_CACHE = "/home/pie2023/dataSSD/models/hf_models"
 
 # hf generation config
 GENERATION_CONFIG = dict(
