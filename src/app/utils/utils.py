@@ -25,7 +25,7 @@ from utils.constants import (
 
 # -------------------------------------------
 # logger
-logger = logging.getLogger("app")
+logger = logging.getLogger(__name__)
 
 
 # -------------------------------------------
@@ -53,7 +53,7 @@ def load_model(
 
 def load_gguf_model(
     model_name: str,
-    gpu_layer: int = DEFAULT_MODEL,
+    gpu_layer: int = 0,
     cache_dir: str = DEFAULT_GGUF_CACHE,
 ):
     """
@@ -78,13 +78,19 @@ def load_gguf_model(
             model_file=model_name,
             gpu_layers=gpu_layer,
         )
-        if (model_name in ORIGINAL_MODEL):
+        if model_name in ORIGINAL_MODEL:
             model_id = MODELS_ID[ORIGINAL_MODEL[model_name]]
         else:
-            logger.info("Impossible de retrouvé le model original, informe qqu de l'equipe de programation!")
-            model_id = "meta-llama/Llama-2-7b-chat-hf" if "llama" in model_path else "mistralai/Mistral-7B-Instruct-v0.1"
+            logger.info(
+                "Impossible de retrouver le modèle original"
+            )
+            model_id = (
+                "meta-llama/Llama-2-7b-chat-hf"
+                if "llama" in model_path
+                else "mistralai/Mistral-7B-Instruct-v0.1"
+            )
             logger.info(f"utilisation de {model_id} par defaut pour le tokeniser")
-    
+
         tokenizer = AutoTokenizer.from_pretrained(
             model_id,
             cache_dir=cache_dir,
@@ -233,7 +239,6 @@ def generate_gguf(
         )
 
         print(messages)
-
 
         logger.info("Started generating text ...")
         partial_message = ""

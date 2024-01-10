@@ -10,7 +10,7 @@ from utils.constants import MODEL_NAMES, DEFAULT_MODEL, PRECISIONS, DEFAULT_PREC
 # ---------------------------------------------------------------------------
 # logger
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("app")
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
