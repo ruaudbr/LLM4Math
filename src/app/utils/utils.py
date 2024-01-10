@@ -6,6 +6,7 @@ from transformers import (
     AutoModelForCausalLM,
     BitsAndBytesConfig,
     TextIteratorStreamer,
+    pipeline,
 )
 from threading import Thread
 
@@ -64,7 +65,7 @@ def load_gguf_model(
         cache_dir: path to the cache directory. Default value.
     """
 
-    global model, tokenizer
+    global model, tokenizer, pipe
     model_path = cache_dir + model_name
     model_type = "llama" if "llama" in model_path else "mistral"
 
@@ -78,11 +79,12 @@ def load_gguf_model(
             gpu_layers=gpu_layer,
         )
         tokenizer = None
+        
         logger.info("Model loaded successfully :)")
 
     except Exception as e:
         logger.info(f"Error loading model through ctransformers: \n{e} ")
-        model, tokenizer = None, None
+        model, tokenizer, pipe = None, None, None
 
 
 def load_hf_model(
@@ -241,15 +243,15 @@ def generate_hf(
         model: model to use to generate the response.
         tokenizer: tokenizer to use to generate the response.
     """
+    messages = []
+    for item in history :
+        messages += [{"role":"user", "content":item[0]}, {"role": "assistant", "content":item[1]}] 
+    messages.append({"role":"user", "content": message})
+    print(messages)
+    input_tokens = tokenizer.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
 
-    dialogue_history_to_format = history + [[message, ""]]
-    messages = "".join(
-        [
-            "".join(["\n<human>:" + item[0], "\n<bot>:" + item[1]])
-            for item in dialogue_history_to_format
-        ]
-    )
-    input_tokens = tokenizer(messages, return_tensors="pt").to("cuda")
+    input_tokens = tokenizer(input_tokens, return_tensors="pt").to("cuda")
+
 
     streamer = TextIteratorStreamer(
         tokenizer,
