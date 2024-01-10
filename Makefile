@@ -9,7 +9,7 @@ help: ## list toutes les commandes
 .PHONY: startWebAI
 
 startWebAI: ## demare une interface web avec les ia
-	@$(PYTHON_PATH) ./src/app/app_GGUF.py
+	@$(PYTHON_PATH) ./src/app/app.py
 
 .PHONY: GPUutilisation
 

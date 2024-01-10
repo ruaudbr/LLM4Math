@@ -19,6 +19,7 @@ from utils.constants import (
     DEFAULT_HF_CACHE,
     DEFAULT_GGUF_CACHE,
     GENERATION_CONFIG,
+    ORIGINAL_MODEL,
 )
 
 
@@ -77,7 +78,17 @@ def load_gguf_model(
             model_file=model_name,
             gpu_layers=gpu_layer,
         )
-        tokenizer = None
+        if (model_name in ORIGINAL_MODEL):
+            model_id = MODELS_ID[ORIGINAL_MODEL[model_name]]
+        else:
+            logger.info("Impossible de retrouvé le model original, informe qqu de l'equipe de programation!")
+            model_id = "meta-llama/Llama-2-7b-chat-hf" if "llama" in model_path else "mistralai/Mistral-7B-Instruct-v0.1"
+            logger.info(f"utilisation de {model_id} par defaut pour le tokeniser")
+    
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_id,
+            cache_dir=cache_dir,
+        )
 
         logger.info("Model loaded successfully :)")
 
@@ -210,13 +221,19 @@ def generate_gguf(
         return "No LLM has been loaded yet ..."
 
     else:
-        dialogue_history_to_format = history + [[message, ""]]
-        messages = "".join(
-            [
-                "".join(["\n<human>:" + item[0], "\n<bot>:" + item[1]])
-                for item in dialogue_history_to_format
+        messages = []
+        for item in history:
+            messages += [
+                {"role": "user", "content": item[0]},
+                {"role": "assistant", "content": item[1]},
             ]
+        messages.append({"role": "user", "content": message})
+        messages = tokenizer.apply_chat_template(
+            messages, add_generation_prompt=True, tokenize=False
         )
+
+        print(messages)
+
 
         logger.info("Started generating text ...")
         partial_message = ""
