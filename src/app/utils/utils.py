@@ -140,14 +140,15 @@ def load_hf_model(
     elif precision == "16":
         logger.info("Loading model in 16 bits")
         tokenizer = AutoTokenizer.from_pretrained(model_id)
-        f16_config = BitsAndBytesConfig(
-            load_in_16bit=True,
-            bnb_16bit_compute_dtype=torch.bfloat16,
-        )
+        # f16_config = BitsAndBytesConfig(
+        #    load_in_16bit=True,
+        #    bnb_16bit_compute_dtype=torch.bfloat16,
+        # )
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
-            quantization_config=f16_config,
+            # quantization_config=f16_config,
             device_map="auto",
+            torch_dtype=torch.float16,
             cache_dir=cache_dir,
         )
     else:
@@ -219,7 +220,10 @@ def generate_gguf(
         logger.info("Started generating text ...")
         partial_message = ""
         for new_token in model(messages, stream=True):
-            if new_token != "<":
+            # looking for the end of the answer and the beginning of the next one
+            if "human>:" in partial_message or "bot>:" in partial_message:
+                break
+            else:
                 partial_message += new_token
                 yield partial_message
         logger.info("Answer generated :)")
@@ -249,11 +253,12 @@ def generate_hf(
             for item in dialogue_history_to_format
         ]
     )
+
     input_tokens = tokenizer(messages, return_tensors="pt").to("cuda")
 
     streamer = TextIteratorStreamer(
         tokenizer,
-        timeout=10.0,
+        timeout=None,
         skip_prompt=True,
         skip_special_tokens=True,
     )
