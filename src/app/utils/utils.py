@@ -78,6 +78,7 @@ def load_gguf_model(
             gpu_layers=gpu_layer,
         )
         tokenizer = None
+
         logger.info("Model loaded successfully :)")
 
     except Exception as e:
@@ -245,16 +246,19 @@ def generate_hf(
         model: model to use to generate the response.
         tokenizer: tokenizer to use to generate the response.
     """
-
-    dialogue_history_to_format = history + [[message, ""]]
-    messages = "".join(
-        [
-            "".join(["\n<human>:" + item[0], "\n<bot>:" + item[1]])
-            for item in dialogue_history_to_format
+    messages = []
+    for item in history:
+        messages += [
+            {"role": "user", "content": item[0]},
+            {"role": "assistant", "content": item[1]},
         ]
+    messages.append({"role": "user", "content": message})
+    print(messages)
+    input_tokens = tokenizer.apply_chat_template(
+        messages, add_generation_prompt=True, tokenize=False
     )
 
-    input_tokens = tokenizer(messages, return_tensors="pt").to("cuda")
+    input_tokens = tokenizer(input_tokens, return_tensors="pt").to("cuda")
 
     streamer = TextIteratorStreamer(
         tokenizer,
