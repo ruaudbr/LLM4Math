@@ -15,6 +15,7 @@ logger = logging.getLogger("app")
 
 # ---------------------------------------------------------------------------
 # predict function for gradio's chat interface
+# TODO: change the name
 def predict(message, history, model_name):
     yield from generate_answer(model_name, message, history)
 

@@ -2,17 +2,17 @@ VENV_PATH = ~/dataSSD/venv/bin/activate
 PYTHON_PATH = ~/dataSSD/venv/bin/python3
 
 .PHONY: help
-help: ## list toutes les commandes
+help: ## Liste toutes les commandes
 	@echo "Available targets:"
 	@awk '/^^([a-zA-Z0-9_-]+):[ \t]*##[ \t]+(.+)/' $(MAKEFILE_LIST) | column -t -s ':'
 
 .PHONY: startWebAI
 
-startWebAI: ## demare une interface web avec les ia
+startWebAI: ## Démarre une interface web 
 	@$(PYTHON_PATH) ./src/app/app.py
 
 .PHONY: GPUutilisation
 
-GPUutilisation: ## affiche l'utilisation de la carte graphique !!ne pas lancé de scripte si qqc tourne deja!!
+GPUutilisation: ## Affiche l'utilisation de la carte graphique 
 	@nvidia-smi
 
