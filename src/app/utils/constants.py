@@ -12,18 +12,28 @@ MODELS_ID = {
     ### Llama-based ###
     "llama2-chat-7b": "meta-llama/Llama-2-7b-chat-hf",
     "llama2-chat-13b": "meta-llama/Llama-2-13b-chat-hf",
-    "vigogne-7b": "bofenghuang/vigogne-2-7b-chat",
-    "vigogne-7b_instruct": "bofenghuang/vigogne-2-7b-instruct",  # ok pour les licenses
+    "llama2-chat-70b": "meta-llama/Llama-2-70b-chat-hf",
+    # wizard series
     "wizard-7b_math": "WizardLM/WizardMath-7B-V1.0",
     "wizard-13b_math": "WizardLM/WizardMath-13B-V1.0",
     "wizard-15b_coder": "WizardLM/WizardCoder-15B-V1.0",
     "wizard-34b_coder": "WizardLM/WizardCoder-Python-34B-V1.0",
+    # french focused
+    "vigogne-7b": "bofenghuang/vigogne-2-7b-chat",
+    "vigogne-7b_instruct": "bofenghuang/vigogne-2-7b-instruct",  # ok pour les licenses
     # bigscience bloom (7b)
     "bloom-7b": "bigscience/bloom-7b1",
     # GPT-neo
     "gptNeo_original": "EleutherAI/gpt-neo-2.7B",
     # GPT-J
     "gptJ_original": "EleutherAI/gpt-j-6B",
+}
+
+
+IS_CHAT = {
+    model_name: ("chat" in full_model_id.lower())
+    or ("instruct" in full_model_id.lower())
+    for model_name, full_model_id in MODELS_ID.items()
 }
 
 
@@ -45,7 +55,9 @@ def load_available_models_paths(path: str):
 
 
 # locally stored models + interesting models stored on the hub
-MODELS_PATH = "/home/pie2023/dataSSD/models/"
+# MODELS_PATH = "/home/pie2023/dataSSD/models/"
+MODELS_PATH = "/home/pie2023/data/models/"
+
 available_models_paths = load_available_models_paths(MODELS_PATH)
 MODEL_NAMES = list(available_models_paths.keys()) + list(MODELS_ID.keys())
 
