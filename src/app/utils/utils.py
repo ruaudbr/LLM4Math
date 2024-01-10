@@ -181,19 +181,19 @@ def load_hf_model(
 
 # -------------------------------------------
 # generation functions
-def generate_answer(
-    model_name: str,
+def predict(
     message: str,
     history: list[list[str, str]],
+    model_name: str,
 ):
     """
     Root function for generating answers.
     Dispatches the generation to the right function based on the chosen model.
 
     Parameters:
-        model_name_chosen: name of the model to use to generate the response. Default value or chosen by the user.
         message: new message from the user.
         history: list of two-element lists containing the message-response history.
+        model_name: name of the model to use to generate the response. Default value or chosen by the user.
     """
 
     global model, tokenizer
@@ -201,12 +201,12 @@ def generate_answer(
     if model is None:
         yield "No LLM has been loaded yet :( Please load a model first."
     elif "gguf" in model_name:
-        yield from generate_gguf(message, history, model)
+        yield from predict_gguf(message, history, model)
     else:
-        yield from generate_hf(message, history, model, tokenizer)
+        yield from predict_hf(message, history, model, tokenizer)
 
 
-def generate_gguf(
+def predict_gguf(
     message: str,
     history: list[list[str, str]],
     model: c_AutoModelForCausalLM,
@@ -250,7 +250,7 @@ def generate_gguf(
         logger.info("Answer generated :)")
 
 
-def generate_hf(
+def predict_hf(
     message,
     history,
     model,

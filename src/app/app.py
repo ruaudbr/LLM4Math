@@ -3,7 +3,7 @@ import gradio as gr
 import argparse
 import logging
 
-from utils.utils import load_model, generate_answer
+from utils.utils import load_model, predict
 from utils.constants import MODEL_NAMES, DEFAULT_MODEL, PRECISIONS, DEFAULT_PRECISION
 
 
@@ -11,12 +11,6 @@ from utils.constants import MODEL_NAMES, DEFAULT_MODEL, PRECISIONS, DEFAULT_PREC
 # logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-# ---------------------------------------------------------------------------
-# predict function for gradio's chat interface
-def predict(message, history, model_name):
-    yield from generate_answer(model_name, message, history)
 
 
 # ---------------------------------------------------------------------------
