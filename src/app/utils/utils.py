@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 def load_model(
     model_name: str,
     precision_chosen: str,
-    gpu_layer: int = 0,
+    gpu_layers: int = 0,
 ):
     """
     Root function for loading models.
@@ -42,18 +42,18 @@ def load_model(
     Parameters:
         model_name: name of the model to load.
         precision_chosen: precision to load the model in (quantization). Default value or chosen by the user.
-        gpu_layer: number of layers to off-load on GPU. Default value or chosen by the user.
+        gpu_layers: number of layers to off-load on GPU. Default value or chosen by the user.
 
     """
     if "gguf" in model_name:
-        load_gguf_model(model_name, gpu_layer)
+        load_gguf_model(model_name, gpu_layers)
     else:
         load_hf_model(model_name, precision_chosen)
 
 
 def load_gguf_model(
     model_name: str,
-    gpu_layer: int = 0,
+    gpu_layers: int = 0,
     cache_dir: str = DEFAULT_GGUF_CACHE,
 ):
     """
@@ -61,7 +61,7 @@ def load_gguf_model(
 
     Parameters:
         model_name: name of the model file to load.
-        gpu_layer: number of layers to off-load on GPU. Default value or chosen by the user.
+        gpu_layers: number of layers to off-load on GPU. Default value or chosen by the user.
         cache_dir: path to the cache directory. Default value.
     """
 
@@ -76,14 +76,12 @@ def load_gguf_model(
             model_path,
             model_type=model_type,
             model_file=model_name,
-            gpu_layers=gpu_layer,
+            gpu_layers=gpu_layers,
         )
         if model_name in ORIGINAL_MODEL:
             model_id = MODELS_ID[ORIGINAL_MODEL[model_name]]
         else:
-            logger.info(
-                "Impossible de retrouver le modèle original"
-            )
+            logger.info("Impossible de retrouver le modèle original")
             model_id = (
                 "meta-llama/Llama-2-7b-chat-hf"
                 if "llama" in model_path
