@@ -185,6 +185,7 @@ def predict(
     message: str,
     history: list[list[str, str]],
     model_name: str,
+    no_log: bool = False,
 ):
     """
     Root function for generating answers.
@@ -201,15 +202,16 @@ def predict(
     if model is None:
         yield "No LLM has been loaded yet :( Please load a model first."
     elif "gguf" in model_name:
-        yield from predict_gguf(message, history, model)
+        yield from predict_gguf(message, history, model, no_log)
     else:
-        yield from predict_hf(message, history, model, tokenizer)
+        yield from predict_hf(message, history, model, tokenizer, no_log)
 
 
 def predict_gguf(
     message: str,
     history: list[list[str, str]],
     model: c_AutoModelForCausalLM,
+    no_log: bool = False,
 ):
     """
     Generates an answer using GGUF's ctransformers.
@@ -235,10 +237,11 @@ def predict_gguf(
         messages = tokenizer.apply_chat_template(
             messages, add_generation_prompt=True, tokenize=False
         )
+        if not no_log:
+            print(messages)
 
-        print(messages)
-
-        logger.info("Started generating text ...")
+        if not no_log:
+            logger.info("Started generating text ...")
         partial_message = ""
         for new_token in model(messages, stream=True):
             # looking for the end of the answer and the beginning of the next one
@@ -247,7 +250,8 @@ def predict_gguf(
             else:
                 partial_message += new_token
                 yield partial_message
-        logger.info("Answer generated :)")
+        if not no_log:
+            logger.info("Answer generated :)")
 
 
 def predict_hf(
@@ -255,6 +259,7 @@ def predict_hf(
     history,
     model,
     tokenizer,
+    no_log: bool = False,
 ):
     """
     Generates an answer using Hugging-Face's transformers.
@@ -273,7 +278,8 @@ def predict_hf(
             {"role": "assistant", "content": item[1]},
         ]
     messages.append({"role": "user", "content": message})
-    print(messages)
+    if not no_log:
+            print(messages)
     input_tokens = tokenizer.apply_chat_template(
         messages, add_generation_prompt=True, tokenize=False
     )
@@ -295,11 +301,13 @@ def predict_hf(
 
     t = Thread(target=model.generate, kwargs=generate_kwargs)
 
-    logger.info("Started generating text ...")
+    if not no_log:
+            logger.info("Started generating text ...")
     t.start()
     partial_message = ""
     for new_token in streamer:
         if new_token != "<":
             partial_message += new_token
             yield partial_message
-    logger.info("Answer generated :)")
+    if not no_log:
+            logger.info("Answer generated :)")

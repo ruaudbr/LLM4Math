@@ -5,6 +5,7 @@ import logging
 
 from utils.utils import load_model, predict
 from utils.constants import MODEL_NAMES, DEFAULT_MODEL, PRECISIONS, DEFAULT_PRECISION
+from test_your_prompts import test_a_file
 
 
 # ---------------------------------------------------------------------------
@@ -51,6 +52,13 @@ def gradio_app():
             gr.ChatInterface(
                 predict,
                 additional_inputs=[model_name_chosen],
+            )
+
+        with gr.Tab("Test a file"):
+            gr.Interface(
+                test_a_file,
+                [gr.File(file_count='single', file_types=[".csv"]), model_name_chosen, precision_chosen],
+                "file"
             )
 
     # Launch Gradio Interface
