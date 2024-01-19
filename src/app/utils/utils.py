@@ -10,7 +10,7 @@ from transformers import (
 from threading import Thread
 
 from ctransformers import AutoModelForCausalLM as c_AutoModelForCausalLM
-
+from llama_cpp import Llama
 
 from utils.constants import (
     MODELS_ID,
@@ -45,8 +45,10 @@ def load_model(
         gpu_layers: number of layers to off-load on GPU. Default value or chosen by the user.
 
     """
+
+    useLlama = "mixtral" in model_name 
     if "gguf" in model_name:
-        load_gguf_model(model_name, gpu_layers)
+        load_gguf_model(model_name, gpu_layers, useLlama=useLlama)
     else:
         load_hf_model(model_name, precision_chosen)
 
@@ -55,6 +57,7 @@ def load_gguf_model(
     model_name: str,
     gpu_layers: int = 0,
     cache_dir: str = DEFAULT_GGUF_CACHE,
+    useLlama: bool = False,
 ):
     """
     Load a GGUF model through the ctransformers library.
@@ -72,12 +75,19 @@ def load_gguf_model(
     logger.info(f"Loading {model_type}-type model from : \n {model_path}")
 
     try:
-        model = c_AutoModelForCausalLM.from_pretrained(
-            model_path,
-            model_type=model_type,
-            model_file=model_name,
-            gpu_layers=gpu_layers,
-        )
+        if useLlama :
+            model = Llama(
+                model_path, 
+                n_gpu_layers= gpu_layers,
+                verbose=False
+            )
+        else :
+            model = c_AutoModelForCausalLM.from_pretrained(
+                model_path,
+                model_type=model_type,
+                model_file=model_name,
+                gpu_layers=gpu_layers,
+            )
         if model_name in ORIGINAL_MODEL:
             model_id = MODELS_ID[ORIGINAL_MODEL[model_name]]
         else:
@@ -199,10 +209,11 @@ def predict(
 
     global model, tokenizer
 
+    useLlama = "mixtral" in model_name
     if model is None:
         yield "No LLM has been loaded yet :( Please load a model first."
     elif "gguf" in model_name:
-        yield from predict_gguf(message, history, model, no_log)
+        yield from predict_gguf(message, history, model, no_log, useLlama)
     else:
         yield from predict_hf(message, history, model, tokenizer, no_log)
 
@@ -212,6 +223,7 @@ def predict_gguf(
     history: list[list[str, str]],
     model: c_AutoModelForCausalLM,
     no_log: bool = False,
+    useLlama : bool = False
 ):
     """
     Generates an answer using GGUF's ctransformers.
@@ -243,12 +255,19 @@ def predict_gguf(
         if not no_log:
             logger.info("Started generating text ...")
         partial_message = ""
-        for new_token in model(messages, stream=True):
+        if useLlama:
+            tokenStream = model(messages, stream=True, max_tokens=500, stop=["[INST]"])
+        else :
+            tokenStream = model(messages, stream=True)
+        for new_token in tokenStream:
             # looking for the end of the answer and the beginning of the next one
             if "human>:" in partial_message or "bot>:" in partial_message:
                 break
             else:
-                partial_message += new_token
+                if useLlama:
+                    partial_message += new_token["choices"][0]["text"]
+                else :
+                    partial_message += new_token
                 yield partial_message
         if not no_log:
             logger.info("Answer generated :)")
