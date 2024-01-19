@@ -1,4 +1,9 @@
 import logging
+import gradio as gr
+
+import pandas as pd
+import os
+from tqdm import tqdm
 
 import torch
 from transformers import (
@@ -68,7 +73,7 @@ def load_gguf_model(
         cache_dir: path to the cache directory. Default value.
     """
 
-    global model, tokenizer
+    global model, tokenizer, cache_model_name
     model_path = cache_dir + model_name
     model_type = "llama" if "llama" in model_path else "mistral"
 
@@ -105,10 +110,11 @@ def load_gguf_model(
         )
 
         logger.info("Model loaded successfully :)")
+        cache_model_name = model_name
 
     except Exception as e:
         logger.info(f"Error loading model through ctransformers: \n{e} ")
-        model, tokenizer = None, None
+        model, tokenizer, cache_model_name = None, None, None
 
 
 def load_hf_model(
@@ -125,68 +131,73 @@ def load_hf_model(
         cache_dir: path to the cache directory. Default value.
     """
 
-    global model, tokenizer
+    global model, tokenizer, cache_model_name
     model_id = MODELS_ID[model_name]
 
     logger.info(f"Loading {model_name} at {model_id}")
-    if precision == "4":
-        logger.info("Loading model in 4 bits")
-        tokenizer = AutoTokenizer.from_pretrained(
-            model_id,
-            cache_dir=cache_dir,
-        )
-        nf4_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_use_double_quant=True,
-            bnb_4bit_compute_dtype=torch.bfloat16,
-        )
-        model = AutoModelForCausalLM.from_pretrained(
-            model_id,
-            quantization_config=nf4_config,
-            device_map="auto",  # accelerate dispatches layers to ram, vram or disk
-            cache_dir=cache_dir,
-        )
-    elif precision == "8":
-        logger.info("Loading model in 8 bits")
-        tokenizer = AutoTokenizer.from_pretrained(
-            model_id,
-            cache_dir=cache_dir,
-        )
-        int8_config = BitsAndBytesConfig(
-            load_in_8bit=True,
-            bnb_8bit_compute_dtype=torch.bfloat16,
-        )
-        model = AutoModelForCausalLM.from_pretrained(
-            model_id,
-            quantization_config=int8_config,
-            device_map="auto",
-            cache_dir=cache_dir,
-        )
-    elif precision == "16":
-        logger.info("Loading model in 16 bits")
-        tokenizer = AutoTokenizer.from_pretrained(model_id)
-        # f16_config = BitsAndBytesConfig(
-        #    load_in_16bit=True,
-        #    bnb_16bit_compute_dtype=torch.bfloat16,
-        # )
-        model = AutoModelForCausalLM.from_pretrained(
-            model_id,
-            # quantization_config=f16_config,
-            device_map="auto",
-            torch_dtype=torch.float16,
-            cache_dir=cache_dir,
-        )
-    else:
-        logger.info("Loading model in 32 bits")
-        tokenizer = AutoTokenizer.from_pretrained(model_id)
-        model = AutoModelForCausalLM.from_pretrained(
-            model_id,
-            device_map="auto",
-            cache_dir=cache_dir,
-        )
 
-    logger.info("Model loaded successfully :)")
+    try:
+        if precision == "4":
+            logger.info("Loading model in 4 bits")
+            tokenizer = AutoTokenizer.from_pretrained(
+                model_id,
+                cache_dir=cache_dir,
+            )
+            nf4_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_use_double_quant=True,
+                bnb_4bit_compute_dtype=torch.bfloat16,
+            )
+            model = AutoModelForCausalLM.from_pretrained(
+                model_id,
+                quantization_config=nf4_config,
+                device_map="auto",  # accelerate dispatches layers to ram, vram or disk
+                cache_dir=cache_dir,
+            )
+        elif precision == "8":
+            logger.info("Loading model in 8 bits")
+            tokenizer = AutoTokenizer.from_pretrained(
+                model_id,
+                cache_dir=cache_dir,
+            )
+            int8_config = BitsAndBytesConfig(
+                load_in_8bit=True,
+                bnb_8bit_compute_dtype=torch.bfloat16,
+            )
+            model = AutoModelForCausalLM.from_pretrained(
+                model_id,
+                quantization_config=int8_config,
+                device_map="auto",
+                cache_dir=cache_dir,
+            )
+        elif precision == "16":
+            logger.info("Loading model in 16 bits")
+            tokenizer = AutoTokenizer.from_pretrained(model_id)
+            # f16_config = BitsAndBytesConfig(
+            #    load_in_16bit=True,
+            #    bnb_16bit_compute_dtype=torch.bfloat16,
+            # )
+            model = AutoModelForCausalLM.from_pretrained(
+                model_id,
+                # quantization_config=f16_config,
+                device_map="auto",
+                torch_dtype=torch.float16,
+                cache_dir=cache_dir,
+            )
+        else:
+            logger.info("Loading model in 32 bits")
+            tokenizer = AutoTokenizer.from_pretrained(model_id)
+            model = AutoModelForCausalLM.from_pretrained(
+                model_id,
+                device_map="auto",
+                cache_dir=cache_dir,
+            )
+        cache_model_name = model_name
+        logger.info("Model loaded successfully :)")
+    except Exception as e:
+        logger.info(f"Error loading model through transformers: \n{e} ")
+        model, tokenizer, cache_model_name = None, None, None
 
 
 # -------------------------------------------
@@ -330,3 +341,41 @@ def predict_hf(
             yield partial_message
     if not no_log:
             logger.info("Answer generated :)")
+
+
+def test_a_file(
+        file_name : str,
+        progress = gr.Progress(track_tqdm=True)
+        ):
+
+    global model, tokenizer, cache_model_name
+
+    ###### Fetching the prompts ######
+    PROMPTS_FOLDER = "./src/generation/prompts/"
+    try:
+        prompts_df = pd.read_csv(file_name)
+    except FileNotFoundError:
+        raise Exception(
+            f"The prompts file {file_name} was not found in the folder {PROMPTS_FOLDER} :("
+        )
+    prompt_col_name = prompts_df.columns[0]
+    prompts = prompts_df[prompt_col_name].to_list()
+
+    ###### Generating ######
+    answers = []
+    print(f"Generating answers")
+    for prompt in progress.tqdm(prompts, desc="Prompt"):
+        prompt = prompt.strip()
+
+        the_answer = list(predict(prompt, [], cache_model_name, no_log= True))[-1]
+        answers.append(the_answer)
+
+
+    ###### Saving prompts:answers into a .csv ######
+    print(f"Saving the answers")
+    assert len(prompts) == len(answers), "The number of prompts and answers is not the same"
+    prompts_df["answer"] = answers
+    ANSWERS_FOLDER = os.path.dirname(file_name)
+    answers_file_name = f"answers_{cache_model_name}_{os.path.basename(file_name)}"
+    prompts_df.to_csv(ANSWERS_FOLDER + "/" + answers_file_name, index=False)
+    return ANSWERS_FOLDER + "/" + answers_file_name

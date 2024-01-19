@@ -3,9 +3,8 @@ import gradio as gr
 import argparse
 import logging
 
-from utils.utils import load_model, predict
+from utils.utils import load_model, predict, test_a_file
 from utils.constants import MODEL_NAMES, DEFAULT_MODEL, PRECISIONS, DEFAULT_PRECISION
-from test_your_prompts import test_a_file
 
 
 # ---------------------------------------------------------------------------
@@ -19,7 +18,6 @@ logger = logging.getLogger(__name__)
 def gradio_app():
     global model, tokenizer
     model, tokenizer = None, None
-
     with gr.Blocks("soft") as iface:
         # create an option menu to choose the model to load
         with gr.Accordion("Model choice and options"):
@@ -57,8 +55,8 @@ def gradio_app():
         with gr.Tab("Test a file"):
             gr.Interface(
                 test_a_file,
-                [gr.File(file_count='single', file_types=[".csv"]), model_name_chosen, precision_chosen],
-                "file"
+                [gr.File(file_count='single', file_types=[".csv"], label="Fichier a tester au format csv")],
+                "file",
             )
 
     # Launch Gradio Interface
