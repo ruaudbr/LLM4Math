@@ -109,10 +109,12 @@ def load_gguf_model(
             cache_dir=cache_dir,
         )
 
+        gr.Info("Le modèle " + model_name + " à été correctement chargé")
         logger.info("Model loaded successfully :)")
         cache_model_name = model_name
 
     except Exception as e:
+        gr.Warning("Erreur : " + e)
         logger.info(f"Error loading model through ctransformers: \n{e} ")
         model, tokenizer, cache_model_name = None, None, None
 
@@ -194,8 +196,10 @@ def load_hf_model(
                 cache_dir=cache_dir,
             )
         cache_model_name = model_name
+        gr.Info("Le modèle " + model_name + " à été correctement chargé")
         logger.info("Model loaded successfully :)")
     except Exception as e:
+        gr.Warning("Erreur : " + e)
         logger.info(f"Error loading model through transformers: \n{e} ")
         model, tokenizer, cache_model_name = None, None, None
 

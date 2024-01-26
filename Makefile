@@ -1,5 +1,5 @@
-VENV_PATH = ~/dataSSD/venv/bin/activate
-PYTHON_PATH = ~/dataSSD/venv/bin/python3
+VENV_PATH = ../venv/bin/activate
+PYTHON_PATH = ../venv/bin/python3
 
 .PHONY: help
 help: ## list toutes les commandes
