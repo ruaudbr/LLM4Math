@@ -29,6 +29,11 @@ MODELS_ID = {
     "gptJ_original": "EleutherAI/gpt-j-6B",
 }
 
+ORIGINAL_MODEL = {
+    "llama-2-13b-chat.Q4_K_M.gguf": "llama2-chat-13b",
+    "mixtral-8x7b-instruct-v0.1.Q5_K_M.gguf": "mixtral-8x7b_instruct",
+}
+
 
 IS_CHAT = {
     model_name: ("chat" in full_model_id.lower())

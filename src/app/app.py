@@ -3,20 +3,14 @@ import gradio as gr
 import argparse
 import logging
 
-from utils.utils import load_model, generate_answer
+from utils.utils import load_model, predict, test_a_file
 from utils.constants import MODEL_NAMES, DEFAULT_MODEL, PRECISIONS, DEFAULT_PRECISION
 
 
 # ---------------------------------------------------------------------------
 # logger
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("app")
-
-
-# ---------------------------------------------------------------------------
-# predict function for gradio's chat interface
-def predict(message, history, model_name):
-    yield from generate_answer(model_name, message, history)
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -24,7 +18,6 @@ def predict(message, history, model_name):
 def gradio_app():
     global model, tokenizer
     model, tokenizer = None, None
-
     with gr.Blocks("soft") as iface:
         # create an option menu to choose the model to load
         with gr.Accordion("Model choice and options"):
@@ -57,6 +50,13 @@ def gradio_app():
             gr.ChatInterface(
                 predict,
                 additional_inputs=[model_name_chosen],
+            )
+
+        with gr.Tab("Test a file"):
+            gr.Interface(
+                test_a_file,
+                [gr.File(file_count='single', file_types=[".csv"], label="Fichier a tester au format csv")],
+                "file",
             )
 
     # Launch Gradio Interface

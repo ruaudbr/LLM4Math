@@ -5,7 +5,7 @@ table utilisateur / VPN:
 | Nicolas  | Pie1 |
 | Martin   | Pie2 |
 | Valentin | Pie3 |
-|          | Pie4 |
+| Pierre   | Pie4 |
 |          | Pie5 |
 |          | Pie6 |
 
