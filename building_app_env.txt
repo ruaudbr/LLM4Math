@@ -1,0 +1,25 @@
+# --------------------- pytorch ----------------------
+1. pytorch : https://pytorch.org/get-started/locally/
+conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+
+# --------------------- transformers ----------------------
+2.1 transformers: https://huggingface.co/docs/transformers/installation
+mamba install -c huggingface transformers
+
+2.1.1 scipy, if not we get an error while loading models (llama2-7b-chat at least)
+mamba install scipy
+
+2.2 accelerate : https://anaconda.org/conda-forge/accelerate
+mamba install conda-forge::accelerate
+
+(2.3 bitsandbytes : https://anaconda.org/conda-forge/bitsandbytes
+mamba install conda-forge::bitsandbytes)
+pip install bitsandbytes
+
+# --------------------- c-transformers ----------------------
+
+3. ctransformers 0.2.27 : https://anaconda.org/jcmorin-ana-org/ctransformers-gpu
+mamba install jcmorin-ana-org/label/test::ctransformers-gpu
+
+# --------------------- gradio ----------------------
+4. gradio : https://anaconda.org/conda-forge/gradio
