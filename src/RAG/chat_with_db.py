@@ -13,7 +13,9 @@ from langchain.prompts import PromptTemplate
 
 
 # name of the vector database stored on the disk
-persist_directory = 'vdb_gsm8k'
+#persist_directory = 'vdb_gsm8k'
+persist_directory = "vdb_profEnPoche_examples"
+
 # ollama embeddings used to vectorize the data
 embeddings_open = OllamaEmbeddings(model="phi")
 
@@ -45,34 +47,40 @@ def process_llm_response(llm_response):
     all_sources = llm_response["source_documents"]
     
     print("\n" + 20*"-")
-    print(f'\n#{len(all_sources)} sources:')
+    print(f'\nGeneration was augmented with {len(all_sources)} sources:')
     print(10*"-")
     for source in all_sources:
-        # print the source file and idx
-        source_path = source.metadata['source'].split("/")
-        source_path = "/".join(source_path[:-2])
-        print(f"Source file : {source_path}")
-        print(f"Sequence #{source.metadata['seq_num']}")
-        
+        ## print the source file and idx
+        #source_path = source.metadata['source'].split("/")
+        #source_path = "/".join(source_path[:-2])
+        #print(f"Source file : {source_path}")
+        #print(f"Sequence #{source.metadata['seq_num']}")
+        #
+        #content = source.page_content
+        #print(f"Content : {content}\n")
         content = source.page_content
-        print(f"Content : {content}\n")
+        print(content)
         print(10*"-")
 
-def build_prompt(template_chosen="template_with_context_1"):
-    template_with_context_1 = """ You are a passionate school grade teacher. You love teaching kids about maths, history, languages, ... 
-    You always use example relevant to kids and explain everything step by step very clearly so that every children can understand.
+def build_prompt(template_chosen="math_template"):
+    math_template = """ You are an assitant to a grade school teacher. Especially, you help create math word problems.
+    You always use example relevant to kids and when requested to provided answer, you explain everything step by step.
     Before you anwser the question, take a look at some examples of good questions an answers.
-    Examples: {context}
-    Question: {question}
-    Helpful Answer:"""
+    Examples of good math problems for children: 
+    {context}
+    
+    Please use these examples to answer the following request from the grade school teacher :
+    {question}
+    
+    Your helpful answer based on the request and the provided exmaples:"""
 
     template_without_context_1 = """You are a passionate school grade teacher. You love teaching kids about maths, history, languages, ... 
     You always use example relevant to kids and explain everything step by step very clearly so that every children can understand.
     Question: {question}
     Helpful Answer:"""
 
-    if template_chosen == "template_with_context_1":
-        prompt = PromptTemplate(input_variables=["context", "question"], template=template_with_context_1)
+    if template_chosen == "math_template":
+        prompt = PromptTemplate(input_variables=["context", "question"], template=math_template)
         return prompt
 
     elif template_chosen == "template_without_context_1":
@@ -81,7 +89,7 @@ def build_prompt(template_chosen="template_with_context_1"):
 
     else:
         print(f"""Please choose a valid template :
-            - '{template_with_context_1}' with context added from the vector database (RAG)
+            - '{math_template}' with context added from the vector database (RAG)
             - '{template_without_context_1}' for the same persona but without the RAG."""
         )
 
@@ -100,7 +108,7 @@ qa_chain = RetrievalQA.from_chain_type(llm=llm_open,
 # testing the RAG
 
 
-#How do you know if an integer is divisible by 3 ?
+#Write exercises on additions with a dinosaures theme
 still_generating = True
 while still_generating:
     question = input("Write your prompt/query to the RAG system : \n(to exit type '!exit')\n")
