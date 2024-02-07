@@ -264,6 +264,7 @@ def predict_gguf(
         messages = tokenizer.apply_chat_template(
             messages, add_generation_prompt=True, tokenize=False
         )
+        messages += "\n"
         if not no_log:
             print(messages)
 
@@ -271,7 +272,7 @@ def predict_gguf(
             logger.info("Started generating text ...")
         partial_message = ""
         if useLlama:
-            tokenStream = model(messages, stream=True, max_tokens=500, stop=["[INST]"])
+            tokenStream = model(messages, stream=True, max_tokens=32000, stop=["</s>"])
         else :
             tokenStream = model(messages, stream=True)
         for new_token in tokenStream:
