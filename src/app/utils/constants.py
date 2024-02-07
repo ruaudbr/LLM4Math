@@ -27,6 +27,8 @@ MODELS_ID = {
     "gptNeo_original": "EleutherAI/gpt-neo-2.7B",
     # GPT-J
     "gptJ_original": "EleutherAI/gpt-j-6B",
+    # Math-oriented models
+    "deepseek": "deepseek-ai/deepseek-math-7b-instruct"
 }
 
 ORIGINAL_MODEL = {
