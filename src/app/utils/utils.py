@@ -34,6 +34,19 @@ logger = logging.getLogger(__name__)
 
 
 # -------------------------------------------
+# extra option
+def save_option(
+        max_lengh : int,
+        answer_prefix : str,
+        end_token : str
+):
+    global Max_n, prefix, endfix
+    Max_n = max_lengh
+    prefix = answer_prefix
+    endfix = end_token
+
+
+# -------------------------------------------
 # loading models functions
 def load_model(
     model_name: str,
@@ -250,6 +263,8 @@ def predict_gguf(
         model: model to use to generate the response.
     """
 
+    global prefix, endfix
+
     if model is None:
         return "No LLM has been loaded yet ..."
 
@@ -264,20 +279,20 @@ def predict_gguf(
         messages = tokenizer.apply_chat_template(
             messages, add_generation_prompt=True, tokenize=False
         )
-        messages += "\n"
+        messages += prefix
         if not no_log:
             print(messages)
 
         if not no_log:
             logger.info("Started generating text ...")
-        partial_message = ""
+        partial_message = prefix
         if useLlama:
-            tokenStream = model(messages, stream=True, max_tokens=32000, stop=["</s>"])
+            tokenStream = model(messages, stream=True, max_tokens=32000, stop=[endfix])
         else :
             tokenStream = model(messages, stream=True)
         for new_token in tokenStream:
             # looking for the end of the answer and the beginning of the next one
-            if "human>:" in partial_message or "bot>:" in partial_message:
+            if "human>:" in partial_message or "bot>:" in partial_message or endfix in partial_message:
                 break
             else:
                 if useLlama:
@@ -318,6 +333,7 @@ def predict_hf(
     input_tokens = tokenizer.apply_chat_template(
         messages, add_generation_prompt=True, tokenize=False
     )
+    input_tokens += prefix
 
     input_tokens = tokenizer(input_tokens, return_tensors="pt").to("cuda")
 
@@ -339,7 +355,7 @@ def predict_hf(
     if not no_log:
             logger.info("Started generating text ...")
     t.start()
-    partial_message = ""
+    partial_message = prefix
     for new_token in streamer:
         if new_token != "<":
             partial_message += new_token
