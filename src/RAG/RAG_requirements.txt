@@ -1,2 +1,4 @@
 langchain
-chroma
+langchain-community
+jq
+chromadb
