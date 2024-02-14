@@ -37,7 +37,8 @@ OLLAMA_default = "mixtral"
 RAG_FOLDER_PATH = "../vdb/"
 RAG_DATABASE = {
     "prof en Poche" : "vdb_profEnPoche_examples",
-    "GSM8k" : "vdb_gsm8k"
+    "GSM8k" : "vdb_gsm8k",
+    "GSM8k no answer" : "vdb_gsm8k_no_answ"
 }
 
 ORIGINAL_MODEL = {

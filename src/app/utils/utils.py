@@ -66,9 +66,10 @@ def save_option(
 # loading models functions
 def load_model(
     model_name: str,
-    precision_chosen: str,
-    gpu_layers: int = 0,
-    use_RAG : bool | None = False,
+    precision : str,
+    gpu_layer : int,
+    Rag_db : str,
+    mode : str
 ):
     """
     Root function for loading models.
@@ -81,18 +82,18 @@ def load_model(
 
     """
 
-    global isRAG
-    isRAG = use_RAG
+    global Mode
+    Mode = mode
 
-    if use_RAG:
-        load_RAG(model_name)
+    if (mode == "RAG"):
+        load_RAG(model_name, Rag_db)
         return
 
-    useLlama = "mixtral" in model_name 
-    if "gguf" in model_name:
-        load_gguf_model(model_name, gpu_layers, useLlama=useLlama)
+    if (mode == "gguf") in model_name:
+        useLlama = "mixtral" in model_name 
+        load_gguf_model(model_name, gpu_layer, useLlama=useLlama)
     else:
-        load_hf_model(model_name, precision_chosen)
+        load_hf_model(model_name, precision)
 
 
 def load_gguf_model(
@@ -240,7 +241,7 @@ def load_hf_model(
         logger.info(f"Error loading model through transformers: \n{e} ")
         model, tokenizer, cache_model_name = None, None, None
 
-def load_RAG(model_name : str):
+def load_RAG(model_name : str, Rag_db : str):
 
     global model, tokenizer, cache_model_name
     logger.info(f"loading model with RAG {model_name}")
@@ -248,7 +249,7 @@ def load_RAG(model_name : str):
     cache_model_name = None
     # name of the vector database stored on the disk
     #persist_directory = 'vdb_gsm8k'
-    persist_directory = RAG_FOLDER_PATH + RAG_DATABASE["prof en Poche"]
+    persist_directory = RAG_FOLDER_PATH + RAG_DATABASE[Rag_db]
 
     # ollama embeddings used to vectorize the data
     embeddings_open = OllamaEmbeddings(model="phi")
@@ -303,18 +304,17 @@ def predict(
         model_name: name of the model to use to generate the response. Default value or chosen by the user.
     """
 
-    global model, tokenizer, isRAG
+    global model, tokenizer, Mode
+    if model is None:
+        yield "No LLM has been loaded yet :( Please load a model first."
 
-    if isRAG:
+    if (Mode == "RAG"):
         yield from predict_RAG(message)
-    else:
+    elif (Mode == "gguf"):
         useLlama = "mixtral" in model_name
-        if model is None:
-            yield "No LLM has been loaded yet :( Please load a model first."
-        elif "gguf" in model_name:
-            yield from predict_gguf(message, history, model, no_log, useLlama)
-        else:
-            yield from predict_hf(message, history, model, tokenizer, no_log)
+        yield from predict_gguf(message, history, model, no_log, useLlama)
+    else:
+        yield from predict_hf(message, history, model, tokenizer, no_log)
 
 
 def predict_gguf(

@@ -4,7 +4,7 @@ import argparse
 import logging
 
 from utils.utils import load_model, predict, test_a_file, save_option
-from utils.constants import MODEL_NAMES, DEFAULT_MODEL, PRECISIONS, DEFAULT_PRECISION, OLLAMA_MODEL, OLLAMA_default
+from utils.constants import MODELS_ID, DEFAULT_MODEL, PRECISIONS, DEFAULT_PRECISION, OLLAMA_MODEL, OLLAMA_default, available_models_paths, RAG_DATABASE
 
 
 # ---------------------------------------------------------------------------
@@ -13,11 +13,18 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def changedropdownvalue(use_rag : bool):
-    if use_rag:
-        return gr.Dropdown(choices=OLLAMA_MODEL, value=OLLAMA_default)
+def changedropdownvalue(mode : str):
+    if (mode == "hugging face"):
+        model_name = gr.Dropdown(choices=list(MODELS_ID.keys()), value=DEFAULT_MODEL)
+        return model_name
+    elif (mode == "gguf") :
+        model_name = gr.Dropdown(choices=list(available_models_paths.keys()))
+        
+        return model_name
     else :
-        return gr.Dropdown(choices=MODEL_NAMES, value=DEFAULT_MODEL)
+        model_name = gr.Dropdown(choices=OLLAMA_MODEL, value=OLLAMA_default)
+        return model_name
+
 
 # ---------------------------------------------------------------------------
 # Gradio app
@@ -28,18 +35,23 @@ def gradio_app():
         # create an option menu to choose the model to load
         with gr.Accordion("Model choice and options"):
             with gr.Tab("model option"):
+                Mode_radio = gr.Radio(
+                    choices= ["hugging face", "gguf", "RAG"],
+                    value="hugging face",
+                    label="What type of model to use"
+                )
                 model_name_chosen = gr.Dropdown(
-                    choices=MODEL_NAMES,
+                    choices=MODELS_ID.keys(),
                     value=DEFAULT_MODEL,
                     label="Choose a model",
                 )
-                precision_chosen = gr.Dropdown(
+                precision = gr.Dropdown(
                     choices=PRECISIONS,
                     value=DEFAULT_PRECISION,
                     label="Choose a quantization precision",
-                    info="HF-models only",
+                    info="Hugging face-models only",
                 )
-                gpu_layers_chosen = gr.Slider(
+                gpu_layer = gr.Slider(
                     minimum=0.0,
                     maximum=50.0,
                     value=10.0,
@@ -47,14 +59,16 @@ def gradio_app():
                     label="Choose the #layers to off-load on GPU",
                     info="GGUF-models only",
                 )
-                RAG_button = gr.Checkbox(
-                    label="should you use RAG to retreive exemple"
+                RAG_database = gr.Dropdown(
+                    choices=list(RAG_DATABASE.keys()),
+                    label="what database to use",
+                    info="RAG-models only",
                 )
-                RAG_button.change(changedropdownvalue, RAG_button, model_name_chosen)
+                Mode_radio.change(changedropdownvalue, Mode_radio, outputs=model_name_chosen)
                 b1 = gr.Button("Load model")
                 b1.click(
                     load_model,
-                    inputs=[model_name_chosen, precision_chosen, gpu_layers_chosen, RAG_button],
+                    inputs=[model_name_chosen, precision, gpu_layer, RAG_database, Mode_radio],
                 )
             with gr.Tab("generation option"):
                 max_length = gr.Slider(
