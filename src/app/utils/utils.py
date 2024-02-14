@@ -25,6 +25,8 @@ from utils.constants import (
     DEFAULT_GGUF_CACHE,
     GENERATION_CONFIG,
     ORIGINAL_MODEL,
+    RAG_FOLDER_PATH,
+    RAG_DATABASE
 )
 
 from utils.RAG_utils import build_prompt, process_llm_response
@@ -246,7 +248,7 @@ def load_RAG(model_name : str):
     cache_model_name = None
     # name of the vector database stored on the disk
     #persist_directory = 'vdb_gsm8k'
-    persist_directory = "vdb_profEnPoche_examples"
+    persist_directory = RAG_FOLDER_PATH + RAG_DATABASE["prof en Poche"]
 
     # ollama embeddings used to vectorize the data
     embeddings_open = OllamaEmbeddings(model="phi")

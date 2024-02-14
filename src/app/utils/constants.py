@@ -34,6 +34,12 @@ MODELS_ID = {
 OLLAMA_MODEL = ["mixtral", "llama2"]
 OLLAMA_default = "mixtral"
 
+RAG_FOLDER_PATH = "../vdb/"
+RAG_DATABASE = {
+    "prof en Poche" : "vdb_profEnPoche_examples",
+    "GSM8k" : "vdb_gsm8k"
+}
+
 ORIGINAL_MODEL = {
     "llama-2-13b-chat.Q4_K_M.gguf": "llama2-chat-13b",
     "mixtral-8x7b-instruct-v0.1.Q5_K_M.gguf": "mixtral-8x7b_instruct",
