@@ -4,7 +4,7 @@ import argparse
 import logging
 
 from utils.utils import load_model, predict, test_a_file, save_option
-from utils.constants import MODEL_NAMES, DEFAULT_MODEL, PRECISIONS, DEFAULT_PRECISION
+from utils.constants import MODEL_NAMES, DEFAULT_MODEL, PRECISIONS, DEFAULT_PRECISION, OLLAMA_MODEL, OLLAMA_default
 
 
 # ---------------------------------------------------------------------------
@@ -12,6 +12,12 @@ from utils.constants import MODEL_NAMES, DEFAULT_MODEL, PRECISIONS, DEFAULT_PREC
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+def changedropdownvalue(use_rag : bool):
+    if use_rag:
+        return gr.Dropdown(choices=OLLAMA_MODEL, value=OLLAMA_default)
+    else :
+        return gr.Dropdown(choices=MODEL_NAMES, value=DEFAULT_MODEL)
 
 # ---------------------------------------------------------------------------
 # Gradio app
@@ -41,10 +47,14 @@ def gradio_app():
                     label="Choose the #layers to off-load on GPU",
                     info="GGUF-models only",
                 )
+                RAG_button = gr.Checkbox(
+                    label="should you use RAG to retreive exemple"
+                )
+                RAG_button.change(changedropdownvalue, RAG_button, model_name_chosen)
                 b1 = gr.Button("Load model")
                 b1.click(
                     load_model,
-                    inputs=[model_name_chosen, precision_chosen, gpu_layers_chosen],
+                    inputs=[model_name_chosen, precision_chosen, gpu_layers_chosen, RAG_button],
                 )
             with gr.Tab("generation option"):
                 max_length = gr.Slider(

@@ -27,6 +27,20 @@ from utils.constants import (
     ORIGINAL_MODEL,
 )
 
+from utils.RAG_utils import build_prompt, process_llm_response
+
+# RAG Imports
+# To load an LLM through Ollama
+from langchain_community.embeddings import OllamaEmbeddings
+# To create/ use the vector database
+from langchain_community.vectorstores import Chroma
+# To use the retrieval QA chain
+from langchain.chains import RetrievalQA
+# To load the LLM through Ollama
+from langchain_community.llms import Ollama
+from langchain.callbacks.manager import CallbackManager
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+# To enhance the Q&A chain with a more sophisticated prompt template
 
 # -------------------------------------------
 # logger
@@ -52,6 +66,7 @@ def load_model(
     model_name: str,
     precision_chosen: str,
     gpu_layers: int = 0,
+    use_RAG : bool | None = False,
 ):
     """
     Root function for loading models.
@@ -63,6 +78,13 @@ def load_model(
         gpu_layers: number of layers to off-load on GPU. Default value or chosen by the user.
 
     """
+
+    global isRAG
+    isRAG = use_RAG
+
+    if use_RAG:
+        load_RAG(model_name)
+        return
 
     useLlama = "mixtral" in model_name 
     if "gguf" in model_name:
@@ -216,6 +238,50 @@ def load_hf_model(
         logger.info(f"Error loading model through transformers: \n{e} ")
         model, tokenizer, cache_model_name = None, None, None
 
+def load_RAG(model_name : str):
+
+    global model, tokenizer, cache_model_name
+    logger.info(f"loading model with RAG {model_name}")
+    tokenizer = None
+    cache_model_name = None
+    # name of the vector database stored on the disk
+    #persist_directory = 'vdb_gsm8k'
+    persist_directory = "vdb_profEnPoche_examples"
+
+    # ollama embeddings used to vectorize the data
+    embeddings_open = OllamaEmbeddings(model="phi")
+
+    # load the vector database from disk
+    vectordb = Chroma(
+        persist_directory=persist_directory,
+        embedding_function=embeddings_open,
+    )
+    # instanciate a retriever to fetch the most similar vectors in the vdb
+    retriever = vectordb.as_retriever()
+
+
+    # -----------------
+    # LLM
+
+    llm_open = Ollama(
+        model=model_name,
+        callback_manager = CallbackManager([StreamingStdOutCallbackHandler()]),
+    )    
+
+    # --------------------- 
+    # Enhance the Q&A chain:
+    model = RetrievalQA.from_chain_type(llm=llm_open,
+                                      chain_type="stuff",
+                                      retriever=retriever,
+                                      return_source_documents=True,
+                                      verbose=False,
+                                      chain_type_kwargs={"prompt": build_prompt("math_template")})
+    gr.Info("Le modèle " + model_name + " à été correctement chargé")
+    logger.info("Model loaded successfully :)")
+
+
+
+
 
 # -------------------------------------------
 # generation functions
@@ -235,15 +301,18 @@ def predict(
         model_name: name of the model to use to generate the response. Default value or chosen by the user.
     """
 
-    global model, tokenizer
+    global model, tokenizer, isRAG
 
-    useLlama = "mixtral" in model_name
-    if model is None:
-        yield "No LLM has been loaded yet :( Please load a model first."
-    elif "gguf" in model_name:
-        yield from predict_gguf(message, history, model, no_log, useLlama)
+    if isRAG:
+        yield from predict_RAG(message)
     else:
-        yield from predict_hf(message, history, model, tokenizer, no_log)
+        useLlama = "mixtral" in model_name
+        if model is None:
+            yield "No LLM has been loaded yet :( Please load a model first."
+        elif "gguf" in model_name:
+            yield from predict_gguf(message, history, model, no_log, useLlama)
+        else:
+            yield from predict_hf(message, history, model, tokenizer, no_log)
 
 
 def predict_gguf(
@@ -400,3 +469,8 @@ def test_a_file(
     answers_file_name = f"answers_{cache_model_name}_{os.path.basename(file_name)}"
     prompts_df.to_csv(ANSWERS_FOLDER + "/" + answers_file_name, index=False)
     return ANSWERS_FOLDER + "/" + answers_file_name
+
+def predict_RAG(msg: str):
+    global model
+    llm_response = model.invoke(msg)
+    yield process_llm_response(llm_response)

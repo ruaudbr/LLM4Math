@@ -31,6 +31,9 @@ MODELS_ID = {
     "deepseek": "deepseek-ai/deepseek-math-7b-instruct"
 }
 
+OLLAMA_MODEL = ["mixtral", "llama2"]
+OLLAMA_default = "mixtral"
+
 ORIGINAL_MODEL = {
     "llama-2-13b-chat.Q4_K_M.gguf": "llama2-chat-13b",
     "mixtral-8x7b-instruct-v0.1.Q5_K_M.gguf": "mixtral-8x7b_instruct",
