@@ -357,7 +357,7 @@ def predict_hf(
     t.start()
     partial_message = prefix
     for new_token in streamer:
-        if new_token != "<":
+        if new_token != "<" and (endfix not in partial_message):
             partial_message += new_token
             yield partial_message
     if not no_log:
