@@ -89,7 +89,7 @@ def load_model(
         load_RAG(model_name, Rag_db)
         return
 
-    if (mode == "gguf") in model_name:
+    if (mode == "gguf"):
         useLlama = "mixtral" in model_name 
         load_gguf_model(model_name, gpu_layer, useLlama=useLlama)
     else:
@@ -278,7 +278,7 @@ def load_RAG(model_name : str, Rag_db : str):
                                       retriever=retriever,
                                       return_source_documents=True,
                                       verbose=False,
-                                      chain_type_kwargs={"prompt": build_prompt("math_template")})
+                                      chain_type_kwargs={"prompt": build_prompt("template_with_context_1")})
     gr.Info("Le modèle " + model_name + " à été correctement chargé")
     logger.info("Model loaded successfully :)")
 
