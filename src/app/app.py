@@ -3,9 +3,8 @@ import gradio as gr
 import argparse
 import logging
 
-from utils.utils import load_model, predict, test_a_file, save_option
+from utils.utils import load_model, predict, test_a_file, save_option, predict_image
 from utils.constants import MODELS_ID, DEFAULT_MODEL, PRECISIONS, DEFAULT_PRECISION, OLLAMA_MODEL, OLLAMA_default, available_models_paths, RAG_DATABASE
-
 
 # ---------------------------------------------------------------------------
 # logger
@@ -24,8 +23,6 @@ def changedropdownvalue(mode : str):
     else :
         model_name = gr.Dropdown(choices=OLLAMA_MODEL, value=OLLAMA_default)
         return model_name
-
-
 # ---------------------------------------------------------------------------
 # Gradio app
 def gradio_app():
@@ -101,6 +98,23 @@ def gradio_app():
                 [gr.File(file_count='single', file_types=[".csv"], label="Fichier a tester au format csv")],
                 "file",
             )
+        with gr.Tab('Image generation'):
+            with gr.Row():
+                prompt = gr.Textbox(
+                    placeholder="Insert your prompt here:", scale=5, container=False
+                )
+                generate_bt = gr.Button("Generate", scale=1)
+
+            image = gr.Image(type="filepath")
+        with gr.Accordion("Advanced options", open=False):
+            seed = gr.Slider(
+                randomize=True, minimum=0, maximum=12013012031030, label="Seed", step=1
+            )
+        inputs = [prompt, seed]
+        outputs = [image]
+        generate_bt.click(
+            fn=predict_image, inputs=inputs, outputs=outputs, show_progress=False
+        )
 
     # Launch Gradio Interface
     logger.info("Launching Gradio Interface...")
