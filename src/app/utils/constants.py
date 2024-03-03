@@ -96,3 +96,11 @@ GENERATION_CONFIG = dict(
     temperature=1.0,
     num_beams=1,
 )
+
+# For image generation
+
+BASE = "stabilityai/stable-diffusion-xl-base-1.0"
+REPO = "ByteDance/SDXL-Lightning"
+# 1-step
+CHECKPOINT = "sdxl_lightning_2step_unet.safetensors"
+TAESD_MODEL = "madebyollin/taesdxl"
