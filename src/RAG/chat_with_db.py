@@ -1,19 +1,22 @@
 # To load an LLM through Ollama
-from langchain_community.embeddings import OllamaEmbeddings
-# To create/ use the vector database
-from langchain_community.vectorstores import Chroma
-# To use the retrieval QA chain
-from langchain.chains import RetrievalQA
-# To load the LLM through Ollama
-from langchain_community.llms import Ollama
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+
+# To use the retrieval QA chain
+from langchain.chains import RetrievalQA
+
 # To enhance the Q&A chain with a more sophisticated prompt template
 from langchain.prompts import PromptTemplate
+from langchain_community.embeddings import OllamaEmbeddings
 
+# To load the LLM through Ollama
+from langchain_community.llms import Ollama
+
+# To create/ use the vector database
+from langchain_community.vectorstores import Chroma
 
 # name of the vector database stored on the disk
-#persist_directory = 'vdb_gsm8k'
+# persist_directory = 'vdb_gsm8k'
 persist_directory = "vdb_profEnPoche_examples"
 
 # ollama embeddings used to vectorize the data
@@ -33,34 +36,36 @@ retriever = vectordb.as_retriever()
 
 llm_open = Ollama(
     model="mixtral",
-    callback_manager = CallbackManager([StreamingStdOutCallbackHandler()]),
-)    
+    callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
+)
 
 
 # -----------------
-# utils 
+# utils
 
-#If you want your RAG to also state the sources of 
+
+# If you want your RAG to also state the sources of
 # the chunks that were returned
 def process_llm_response(llm_response):
-    print(llm_response['result'])
+    print(llm_response["result"])
     all_sources = llm_response["source_documents"]
-    
-    print("\n" + 20*"-")
-    print(f'\nGeneration was augmented with {len(all_sources)} sources:')
-    print(10*"-")
+
+    print("\n" + 20 * "-")
+    print(f"\nGeneration was augmented with {len(all_sources)} sources:")
+    print(10 * "-")
     for source in all_sources:
         ## print the source file and idx
-        #source_path = source.metadata['source'].split("/")
-        #source_path = "/".join(source_path[:-2])
-        #print(f"Source file : {source_path}")
-        #print(f"Sequence #{source.metadata['seq_num']}")
+        # source_path = source.metadata['source'].split("/")
+        # source_path = "/".join(source_path[:-2])
+        # print(f"Source file : {source_path}")
+        # print(f"Sequence #{source.metadata['seq_num']}")
         #
-        #content = source.page_content
-        #print(f"Content : {content}\n")
+        # content = source.page_content
+        # print(f"Content : {content}\n")
         content = source.page_content
         print(content)
-        print(10*"-")
+        print(10 * "-")
+
 
 def build_prompt(template_chosen="math_template"):
     math_template = """ You are an assitant to a grade school teacher. Especially, you help create math word problems.
@@ -80,38 +85,46 @@ def build_prompt(template_chosen="math_template"):
     Helpful Answer:"""
 
     if template_chosen == "math_template":
-        prompt = PromptTemplate(input_variables=["context", "question"], template=math_template)
+        prompt = PromptTemplate(
+            input_variables=["context", "question"], template=math_template
+        )
         return prompt
 
     elif template_chosen == "template_without_context_1":
-        prompt = PromptTemplate(input_variables=["question"], template=template_without_context_1)
+        prompt = PromptTemplate(
+            input_variables=["question"], template=template_without_context_1
+        )
         return prompt
 
     else:
-        print(f"""Please choose a valid template :
+        print(
+            f"""Please choose a valid template :
             - '{math_template}' with context added from the vector database (RAG)
             - '{template_without_context_1}' for the same persona but without the RAG."""
         )
 
 
-
-# --------------------- 
+# ---------------------
 # Enhance the Q&A chain:
-qa_chain = RetrievalQA.from_chain_type(llm=llm_open,
-                                  chain_type="stuff",
-                                  retriever=retriever,
-                                  return_source_documents=True,
-                                  verbose=True,
-                                  chain_type_kwargs={"prompt": build_prompt("template_with_context_1")})
-        
+qa_chain = RetrievalQA.from_chain_type(
+    llm=llm_open,
+    chain_type="stuff",
+    retriever=retriever,
+    return_source_documents=True,
+    verbose=True,
+    chain_type_kwargs={"prompt": build_prompt("template_with_context_1")},
+)
+
 # -----------------
 # testing the RAG
 
 
-#Write exercises on additions with a dinosaures theme
+# Write exercises on additions with a dinosaures theme
 still_generating = True
 while still_generating:
-    question = input("Write your prompt/query to the RAG system : \n(to exit type '!exit')\n")
+    question = input(
+        "Write your prompt/query to the RAG system : \n(to exit type '!exit')\n"
+    )
     if question == "!help":
         print("!exit to close the model")
     elif question == "!exit":
@@ -120,5 +133,3 @@ while still_generating:
         # Question
         llm_response = qa_chain.invoke(question)
         process_llm_response(llm_response)
-
-        

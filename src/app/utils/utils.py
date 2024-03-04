@@ -1,71 +1,65 @@
 import logging
-import gradio as gr
-
-import pandas as pd
 import os
-from tqdm import tqdm
-
-import torch
-from transformers import (
-    AutoTokenizer,
-    AutoModelForCausalLM,
-    BitsAndBytesConfig,
-    TextIteratorStreamer,
-)
+import tempfile
+import time
+from pathlib import Path
 from threading import Thread
 
+import gradio as gr
+import pandas as pd
+import torch
 from ctransformers import AutoModelForCausalLM as c_AutoModelForCausalLM
-from llama_cpp import Llama
 
-from utils.constants import (
-    MODELS_ID,
-    DEFAULT_MODEL,
-    DEFAULT_PRECISION,
-    DEFAULT_HF_CACHE,
-    DEFAULT_GGUF_CACHE,
-    GENERATION_CONFIG,
-    ORIGINAL_MODEL,
-    RAG_FOLDER_PATH,
-    RAG_DATABASE,
-    TAESD_MODEL,
-    BASE,
-    REPO, 
-    CHECKPOINT 
+## For image generation
+from diffusers import (
+    AutoencoderTiny,
+    EulerDiscreteScheduler,
+    StableDiffusionXLPipeline,
+    UNet2DConditionModel,
 )
+from huggingface_hub import hf_hub_download
+from langchain.callbacks.manager import CallbackManager
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
-from utils.RAG_utils import build_prompt, process_llm_response
+# To use the retrieval QA chain
+from langchain.chains import RetrievalQA
 
 # RAG Imports
 # To load an LLM through Ollama
 from langchain_community.embeddings import OllamaEmbeddings
-# To create/ use the vector database
-from langchain_community.vectorstores import Chroma
-# To use the retrieval QA chain
-from langchain.chains import RetrievalQA
+
 # To load the LLM through Ollama
 from langchain_community.llms import Ollama
-from langchain.callbacks.manager import CallbackManager
-from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
-## For image generation
-from diffusers import (
-    StableDiffusionXLPipeline,
-    EulerDiscreteScheduler,
-    UNet2DConditionModel,
-    AutoencoderTiny,
-)
-import torch
-import os
-from huggingface_hub import hf_hub_download
-
-
+# To create/ use the vector database
+from langchain_community.vectorstores import Chroma
+from llama_cpp import Llama
 from PIL import Image
-import gradio as gr
-import time
 from safetensors.torch import load_file
-import time
-import tempfile
-from pathlib import Path
+from tqdm import tqdm
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    BitsAndBytesConfig,
+    TextIteratorStreamer,
+)
+from utils.constants import (
+    BASE,
+    CHECKPOINT,
+    DEFAULT_GGUF_CACHE,
+    DEFAULT_HF_CACHE,
+    DEFAULT_MODEL,
+    DEFAULT_PRECISION,
+    GENERATION_CONFIG,
+    MODELS_ID,
+    ORIGINAL_MODEL,
+    RAG_DATABASE,
+    RAG_FOLDER_PATH,
+    REPO,
+    TAESD_MODEL,
+)
+from utils.RAG_utils import build_prompt, process_llm_response
+
 # To enhance the Q&A chain with a more sophisticated prompt template
 
 # -------------------------------------------
@@ -75,11 +69,7 @@ logger = logging.getLogger(__name__)
 
 # -------------------------------------------
 # extra option
-def save_option(
-        max_lengh : int,
-        answer_prefix : str,
-        end_token : str
-):
+def save_option(max_lengh: int, answer_prefix: str, end_token: str):
     global Max_n, prefix, endfix
     Max_n = max_lengh
     prefix = answer_prefix
@@ -88,13 +78,7 @@ def save_option(
 
 # -------------------------------------------
 # loading models functions
-def load_model(
-    model_name: str,
-    precision : str,
-    gpu_layer : int,
-    Rag_db : str,
-    mode : str
-):
+def load_model(model_name: str, precision: str, gpu_layer: int, Rag_db: str, mode: str):
     """
     Root function for loading models.
     Dispatches the loading to the right function based on the chosen model.
@@ -109,12 +93,12 @@ def load_model(
     global Mode
     Mode = mode
 
-    if (mode == "RAG"):
+    if mode == "RAG":
         load_RAG(model_name, Rag_db)
         return
 
-    if (mode == "gguf"):
-        useLlama = "mixtral" in model_name 
+    if mode == "gguf":
+        useLlama = "mixtral" in model_name
         load_gguf_model(model_name, gpu_layer, useLlama=useLlama)
     else:
         load_hf_model(model_name, precision)
@@ -142,13 +126,9 @@ def load_gguf_model(
     logger.info(f"Loading {model_type}-type model from : \n {model_path}")
 
     try:
-        if useLlama :
-            model = Llama(
-                model_path, 
-                n_gpu_layers= gpu_layers,
-                verbose=False
-            )
-        else :
+        if useLlama:
+            model = Llama(model_path, n_gpu_layers=gpu_layers, verbose=False)
+        else:
             model = c_AutoModelForCausalLM.from_pretrained(
                 model_path,
                 model_type=model_type,
@@ -265,14 +245,15 @@ def load_hf_model(
         logger.info(f"Error loading model through transformers: \n{e} ")
         model, tokenizer, cache_model_name = None, None, None
 
-def load_RAG(model_name : str, Rag_db : str):
+
+def load_RAG(model_name: str, Rag_db: str):
 
     global model, tokenizer, cache_model_name
     logger.info(f"loading model with RAG {model_name}")
     tokenizer = None
     cache_model_name = None
     # name of the vector database stored on the disk
-    #persist_directory = 'vdb_gsm8k'
+    # persist_directory = 'vdb_gsm8k'
     persist_directory = RAG_FOLDER_PATH + RAG_DATABASE[Rag_db]
 
     # ollama embeddings used to vectorize the data
@@ -286,28 +267,26 @@ def load_RAG(model_name : str, Rag_db : str):
     # instanciate a retriever to fetch the most similar vectors in the vdb
     retriever = vectordb.as_retriever()
 
-
     # -----------------
     # LLM
 
     llm_open = Ollama(
         model=model_name,
-        callback_manager = CallbackManager([StreamingStdOutCallbackHandler()]),
-    )    
+        callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
+    )
 
-    # --------------------- 
+    # ---------------------
     # Enhance the Q&A chain:
-    model = RetrievalQA.from_chain_type(llm=llm_open,
-                                      chain_type="stuff",
-                                      retriever=retriever,
-                                      return_source_documents=True,
-                                      verbose=False,
-                                      chain_type_kwargs={"prompt": build_prompt("template_with_context_1")})
+    model = RetrievalQA.from_chain_type(
+        llm=llm_open,
+        chain_type="stuff",
+        retriever=retriever,
+        return_source_documents=True,
+        verbose=False,
+        chain_type_kwargs={"prompt": build_prompt("template_with_context_1")},
+    )
     gr.Info("Le modèle " + model_name + " à été correctement chargé")
     logger.info("Model loaded successfully :)")
-
-
-
 
 
 # -------------------------------------------
@@ -332,9 +311,9 @@ def predict(
     if model is None:
         yield "No LLM has been loaded yet :( Please load a model first."
 
-    if (Mode == "RAG"):
+    if Mode == "RAG":
         yield from predict_RAG(message)
-    elif (Mode == "gguf"):
+    elif Mode == "gguf":
         useLlama = "mixtral" in model_name
         yield from predict_gguf(message, history, model, no_log, useLlama)
     else:
@@ -346,7 +325,7 @@ def predict_gguf(
     history: list[list[str, str]],
     model: c_AutoModelForCausalLM,
     no_log: bool = False,
-    useLlama : bool = False
+    useLlama: bool = False,
 ):
     """
     Generates an answer using GGUF's ctransformers.
@@ -383,16 +362,20 @@ def predict_gguf(
         partial_message = prefix
         if useLlama:
             tokenStream = model(messages, stream=True, max_tokens=32000, stop=[endfix])
-        else :
+        else:
             tokenStream = model(messages, stream=True)
         for new_token in tokenStream:
             # looking for the end of the answer and the beginning of the next one
-            if "human>:" in partial_message or "bot>:" in partial_message or endfix in partial_message:
+            if (
+                "human>:" in partial_message
+                or "bot>:" in partial_message
+                or endfix in partial_message
+            ):
                 break
             else:
                 if useLlama:
                     partial_message += new_token["choices"][0]["text"]
-                else :
+                else:
                     partial_message += new_token
                 yield partial_message
         if not no_log:
@@ -424,7 +407,7 @@ def predict_hf(
         ]
     messages.append({"role": "user", "content": message})
     if not no_log:
-            print(messages)
+        print(messages)
     input_tokens = tokenizer.apply_chat_template(
         messages, add_generation_prompt=True, tokenize=False
     )
@@ -448,7 +431,7 @@ def predict_hf(
     t = Thread(target=model.generate, kwargs=generate_kwargs)
 
     if not no_log:
-            logger.info("Started generating text ...")
+        logger.info("Started generating text ...")
     t.start()
     partial_message = prefix
     for new_token in streamer:
@@ -456,13 +439,10 @@ def predict_hf(
             partial_message += new_token
             yield partial_message
     if not no_log:
-            logger.info("Answer generated :)")
+        logger.info("Answer generated :)")
 
 
-def test_a_file(
-        file_name : str,
-        progress = gr.Progress(track_tqdm=True)
-        ):
+def test_a_file(file_name: str, progress=gr.Progress(track_tqdm=True)):
 
     global model, tokenizer, cache_model_name
 
@@ -483,23 +463,26 @@ def test_a_file(
     for prompt in progress.tqdm(prompts, desc="Prompt"):
         prompt = prompt.strip()
 
-        the_answer = list(predict(prompt, [], cache_model_name, no_log= True))[-1]
+        the_answer = list(predict(prompt, [], cache_model_name, no_log=True))[-1]
         answers.append(the_answer)
-
 
     ###### Saving prompts:answers into a .csv ######
     print(f"Saving the answers")
-    assert len(prompts) == len(answers), "The number of prompts and answers is not the same"
+    assert len(prompts) == len(
+        answers
+    ), "The number of prompts and answers is not the same"
     prompts_df["answer"] = answers
     ANSWERS_FOLDER = os.path.dirname(file_name)
     answers_file_name = f"answers_{cache_model_name}_{os.path.basename(file_name)}"
     prompts_df.to_csv(ANSWERS_FOLDER + "/" + answers_file_name, index=False)
     return ANSWERS_FOLDER + "/" + answers_file_name
 
+
 def predict_RAG(msg: str):
     global model
     llm_response = model.invoke(msg)
     yield process_llm_response(llm_response)
+
 
 # Code copy-pasted from https://huggingface.co/spaces/radames/Real-Time-Text-to-Image-SDXL-Lightning/blob/main/app.py
 SFAST_COMPILE = os.environ.get("SFAST_COMPILE", "0") == "1"
@@ -555,7 +538,7 @@ if SAFETY_CHECKER:
 
 
 if SFAST_COMPILE:
-    from sfast.compilers.diffusion_pipeline_compiler import compile, CompilationConfig
+    from sfast.compilers.diffusion_pipeline_compiler import CompilationConfig, compile
 
     # sfast compilation
     config = CompilationConfig.Default()

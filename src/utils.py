@@ -1,7 +1,6 @@
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
-
 from constants import DEFAULT_CACHE
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 
 def load_model(model_id, precision, cache_dir=DEFAULT_CACHE):

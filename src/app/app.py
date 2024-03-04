@@ -1,10 +1,18 @@
-import gradio as gr
-
 import argparse
 import logging
 
-from utils.utils import load_model, predict, test_a_file, save_option, predict_image
-from utils.constants import MODELS_ID, DEFAULT_MODEL, PRECISIONS, DEFAULT_PRECISION, OLLAMA_MODEL, OLLAMA_default, available_models_paths, RAG_DATABASE
+import gradio as gr
+from utils.constants import (
+    DEFAULT_MODEL,
+    DEFAULT_PRECISION,
+    MODELS_ID,
+    OLLAMA_MODEL,
+    PRECISIONS,
+    RAG_DATABASE,
+    OLLAMA_default,
+    available_models_paths,
+)
+from utils.utils import load_model, predict, predict_image, save_option, test_a_file
 
 # ---------------------------------------------------------------------------
 # logger
@@ -12,17 +20,19 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def changedropdownvalue(mode : str):
-    if (mode == "hugging face"):
+def changedropdownvalue(mode: str):
+    if mode == "hugging face":
         model_name = gr.Dropdown(choices=list(MODELS_ID.keys()), value=DEFAULT_MODEL)
         return model_name
-    elif (mode == "gguf") :
+    elif mode == "gguf":
         model_name = gr.Dropdown(choices=list(available_models_paths.keys()))
-        
+
         return model_name
-    else :
+    else:
         model_name = gr.Dropdown(choices=OLLAMA_MODEL, value=OLLAMA_default)
         return model_name
+
+
 # ---------------------------------------------------------------------------
 # Gradio app
 def gradio_app():
@@ -33,9 +43,9 @@ def gradio_app():
         with gr.Accordion("Model choice and options"):
             with gr.Tab("model option"):
                 Mode_radio = gr.Radio(
-                    choices= ["hugging face", "gguf", "RAG"],
+                    choices=["hugging face", "gguf", "RAG"],
                     value="hugging face",
-                    label="What type of model to use"
+                    label="What type of model to use",
                 )
                 model_name_chosen = gr.Dropdown(
                     choices=MODELS_ID.keys(),
@@ -61,27 +71,35 @@ def gradio_app():
                     label="what database to use",
                     info="RAG-models only",
                 )
-                Mode_radio.change(changedropdownvalue, Mode_radio, outputs=model_name_chosen)
+                Mode_radio.change(
+                    changedropdownvalue, Mode_radio, outputs=model_name_chosen
+                )
                 b1 = gr.Button("Load model")
                 b1.click(
                     load_model,
-                    inputs=[model_name_chosen, precision, gpu_layer, RAG_database, Mode_radio],
+                    inputs=[
+                        model_name_chosen,
+                        precision,
+                        gpu_layer,
+                        RAG_database,
+                        Mode_radio,
+                    ],
                 )
             with gr.Tab("generation option"):
                 max_length = gr.Slider(
-                    minimum = 0,
+                    minimum=0,
                     maximum=2048,
                     value=500,
                     step=1,
-                    label="How many token can the model generate max (not working yet)"
+                    label="How many token can the model generate max (not working yet)",
                 )
                 prefix_text = gr.Text(
                     label="what does the answer should start with (can force an AI to follow a patern)",
-                    placeholder="###CONTEXT###"
+                    placeholder="###CONTEXT###",
                 )
                 end_text = gr.Text(
                     placeholder="</s>",
-                    label="what should be consider the end of the bot generation (can cause the AI to stop generating sonner)"
+                    label="what should be consider the end of the bot generation (can cause the AI to stop generating sonner)",
                 )
                 b2 = gr.Button("Save options")
                 b2.click(save_option, [max_length, prefix_text, end_text])
@@ -95,10 +113,16 @@ def gradio_app():
         with gr.Tab("Test a file"):
             gr.Interface(
                 test_a_file,
-                [gr.File(file_count='single', file_types=[".csv"], label="Fichier a tester au format csv")],
+                [
+                    gr.File(
+                        file_count="single",
+                        file_types=[".csv"],
+                        label="Fichier a tester au format csv",
+                    )
+                ],
                 "file",
             )
-        with gr.Tab('Image generation'):
+        with gr.Tab("Image generation"):
             with gr.Row():
                 prompt = gr.Textbox(
                     placeholder="Insert your prompt here:", scale=5, container=False

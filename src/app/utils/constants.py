@@ -28,7 +28,7 @@ MODELS_ID = {
     # GPT-J
     "gptJ_original": "EleutherAI/gpt-j-6B",
     # Math-oriented models
-    "deepseek": "deepseek-ai/deepseek-math-7b-instruct"
+    "deepseek": "deepseek-ai/deepseek-math-7b-instruct",
 }
 
 OLLAMA_MODEL = ["mixtral", "llama2"]
@@ -36,9 +36,9 @@ OLLAMA_default = "mixtral"
 
 RAG_FOLDER_PATH = "../vdb/"
 RAG_DATABASE = {
-    "prof en Poche" : "vdb_profEnPoche_examples",
-    "GSM8k" : "vdb_gsm8k",
-    "GSM8k no answer" : "vdb_gsm8k_no_answ"
+    "prof en Poche": "vdb_profEnPoche_examples",
+    "GSM8k": "vdb_gsm8k",
+    "GSM8k no answer": "vdb_gsm8k_no_answ",
 }
 
 ORIGINAL_MODEL = {

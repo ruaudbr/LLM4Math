@@ -1,13 +1,11 @@
 import sys
-from tqdm import tqdm
 
 import pandas as pd
-
-import sys
+from tqdm import tqdm
 
 # caution: path[0] is reserved for script path (or '' in REPL)
 sys.path.insert(1, "src/")
-from constants import MODELS_ID, IS_CHAT
+from constants import IS_CHAT, MODELS_ID
 from utils import load_model
 
 # Parsing aguments

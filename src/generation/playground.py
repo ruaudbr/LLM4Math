@@ -1,9 +1,7 @@
-from transformers import TextStreamer
-
 # Hugging-Face models ids
 from constants import MODELS_ID
+from transformers import TextStreamer
 from utils import load_model
-
 
 ###### Choose your model with its name ######
 model_not_chosen = True
