@@ -1,32 +1,43 @@
-PIE MSXS-08
+PIE MSXS-08-2023/2024
 ==============================
 
 ISAE-SUPAERO Group project for Prof en Poche
 
 Project Organization
 
-
 ==============================
-
-Info pour vous connecter en VPN dans le fichier [SETUP_VPN.md](./SETUP_VPN.md).
-
-==============================
-
-Sur la machine 192.168.1.66,
-L'environnement python à utiliser se trouve dans ~/dataSSD/venv/bin
-vous pouvez l'activer avec la commande `source ~/dataSSD/venv/bin/activate`.
 
 Les commandes de base facile à lancé sont visible avec `make help`
+
+==============================
+
+# Configuration minimum :
+
+-   Make
+-   python3 et python3-venv
+-   GPU qui support cuda (testé la command `nvidia-smi`)
+
+L'instalation a seulement été testé sur des Linux
+
+# Installation
+
+cette outil utilise Makefile, pip et l'outils d'environement virtuelle de python3.
+
+pour installé les dépendance sur linux, run `Make setup`
+
+une fois les dépendance installé, l'interface peut etre lancé avec `Make startWebUI`
+
+==============================
+
+# Modèle et base de donnée
+
+Les chemin de base et les list de modèle peuvent etre modifier dans le fichier `src/app/utils/constants.py`
 
 ------------
 
     ├── README.md          <- The top-level README for developers using this project.
-    ├── SETUP_VPN.md       <- Information on how to setup the vpn
     |
-    ├── models             <- Trained and serialized models, model predictions, or model summaries
-    │
-    ├── notebooks          <- Jupyter notebooks. 
-    |   └── playground.ipynb <- Global notebook to test some AI
+    ├── Makefile           <- Makefile with default command to run
     │
     ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
     │                         generated with `pip freeze > requirements.txt`
