@@ -9,3 +9,4 @@ scipy
 
 
 ctransformers[gpu]
+ctransformers[gpu]
