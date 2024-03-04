@@ -16,3 +16,4 @@ transformers
 bitsandbytes
 pandas
 scipy
+peft
