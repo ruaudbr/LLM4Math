@@ -60,14 +60,13 @@ from utils.constants import (
 )
 from utils.RAG_utils import build_prompt, process_llm_response
 
-# To enhance the Q&A chain with a more sophisticated prompt template
 
-# -------------------------------------------
+# ------
 # logger
 logger = logging.getLogger(__name__)
 
 
-# -------------------------------------------
+# ------------
 # extra option
 def save_option(max_lengh: int, answer_prefix: str, end_token: str):
     global Max_n, prefix, endfix
@@ -76,7 +75,7 @@ def save_option(max_lengh: int, answer_prefix: str, end_token: str):
     endfix = end_token
 
 
-# -------------------------------------------
+# ------------------------
 # loading models functions
 def load_model(model_name: str, precision: str, gpu_layer: int, Rag_db: str, mode: str):
     """
@@ -289,8 +288,8 @@ def load_RAG(model_name: str, Rag_db: str):
     logger.info("Model loaded successfully :)")
 
 
-# -------------------------------------------
-# generation functions
+# -----------------------
+# LLM generation functions
 def predict(
     message: str,
     history: list[list[str, str]],
@@ -483,6 +482,11 @@ def predict_RAG(msg: str):
     llm_response = model.invoke(msg)
     yield process_llm_response(llm_response)
 
+
+
+
+# ----------------
+# Image generation
 
 # Code copy-pasted from https://huggingface.co/spaces/radames/Real-Time-Text-to-Image-SDXL-Lightning/blob/main/app.py
 SFAST_COMPILE = os.environ.get("SFAST_COMPILE", "0") == "1"
