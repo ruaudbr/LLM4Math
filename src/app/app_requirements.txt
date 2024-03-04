@@ -1,11 +1,11 @@
-gradio=4.13.0=pyhd8ed1ab_0
+gradio
 
-pytorch=2.1.2=py3.11_cuda11.8_cudnn8.7.0_0
+torch
 
-transformers=4.36.2=pyhd8ed1ab_0
-accelerate=0.25.0=pyhd8ed1ab_0
-bitsandbytes=0.41.3.post2=pypi_0
-scipy=1.11.4=py311h64a7726_0
+transformers
+accelerate
+bitsandbytes
+scipy
 
-ctransformers=0.2.27=gpu_cuda118py311h1234567_102
-ctransformers-gpu=0.2.27=h449e18b_102
+
+ctransformers[gpu]
