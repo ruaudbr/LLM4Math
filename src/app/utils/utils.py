@@ -497,9 +497,9 @@ torch_device = device
 torch_dtype = torch.float16
 
 
-unet = UNet2DConditionModel.from_config(BASE, subfolder="unet").to(
-    "cuda", torch.float16
-)
+unet_config = UNet2DConditionModel.load_config(BASE, subfolder="unet")
+unet = UNet2DConditionModel.from_config(unet_config).to("cuda", torch.float16)
+
 unet.load_state_dict(load_file(hf_hub_download(REPO, CHECKPOINT), device="cuda"))
 pipe = StableDiffusionXLPipeline.from_pretrained(
     BASE, unet=unet, torch_dtype=torch.float16, variant="fp16", safety_checker=False
