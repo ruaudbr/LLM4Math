@@ -1,3 +1,6 @@
+a faire tourné avec le venv `source ../venv/bin/activate`
+
+!! Ces scripts ne sont plus a jour. aucune guaranty sur leur fonctionnement n'est fournis!!
 # test_your_prompts.py
 
 Script pour faire tourner un LLM sur une série de prompts. 

@@ -1,4 +1,7 @@
 # Hugging-Face models ids
+
+sys.path.insert(1, "../src/utils")
+
 from constants import MODELS_ID
 from transformers import TextStreamer
 from utils import load_model
