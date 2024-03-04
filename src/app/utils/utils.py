@@ -60,7 +60,6 @@ from utils.constants import (
 )
 from utils.RAG_utils import build_prompt, process_llm_response
 
-
 # ------
 # logger
 logger = logging.getLogger(__name__)
@@ -483,21 +482,20 @@ def predict_RAG(msg: str):
     yield process_llm_response(llm_response)
 
 
-
-
 # ----------------
 # Image generation
 
 # Code copy-pasted from https://huggingface.co/spaces/radames/Real-Time-Text-to-Image-SDXL-Lightning/blob/main/app.py
-SFAST_COMPILE = os.environ.get("SFAST_COMPILE", "0") == "1"
-SAFETY_CHECKER = os.environ.get("SAFETY_CHECKER", "0") == "1"
+# And simplified
+
+
 USE_TAESD = os.environ.get("USE_TAESD", "0") == "1"
 
-# check if MPS is available OSX only M1/M2/M3 chips
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch_device = device
 torch_dtype = torch.float16
+
 
 unet = UNet2DConditionModel.from_config(BASE, subfolder="unet").to(
     "cuda", torch.float16
@@ -506,6 +504,7 @@ unet.load_state_dict(load_file(hf_hub_download(REPO, CHECKPOINT), device="cuda")
 pipe = StableDiffusionXLPipeline.from_pretrained(
     BASE, unet=unet, torch_dtype=torch.float16, variant="fp16", safety_checker=False
 ).to("cuda")
+
 
 if USE_TAESD:
     pipe.vae = AutoencoderTiny.from_pretrained(
@@ -518,52 +517,6 @@ pipe.scheduler = EulerDiscreteScheduler.from_config(
     pipe.scheduler.config, timestep_spacing="trailing"
 )
 pipe.set_progress_bar_config(disable=True)
-if SAFETY_CHECKER:
-    from safety_checker import StableDiffusionSafetyChecker
-    from transformers import CLIPFeatureExtractor
-
-    safety_checker = StableDiffusionSafetyChecker.from_pretrained(
-        "CompVis/stable-diffusion-safety-checker"
-    ).to(device)
-    feature_extractor = CLIPFeatureExtractor.from_pretrained(
-        "openai/clip-vit-base-patch32"
-    )
-
-    def check_nsfw_images(
-        images: list[Image.Image],
-    ) -> tuple[list[Image.Image], list[bool]]:
-        safety_checker_input = feature_extractor(images, return_tensors="pt").to(device)
-        has_nsfw_concepts = safety_checker(
-            images=[images],
-            clip_input=safety_checker_input.pixel_values.to(torch_device),
-        )
-
-        return images, has_nsfw_concepts
-
-
-if SFAST_COMPILE:
-    from sfast.compilers.diffusion_pipeline_compiler import CompilationConfig, compile
-
-    # sfast compilation
-    config = CompilationConfig.Default()
-    try:
-        import xformers
-
-        config.enable_xformers = True
-    except ImportError:
-        print("xformers not installed, skip")
-    try:
-        import triton
-
-        config.enable_triton = True
-    except ImportError:
-        print("Triton not installed, skip")
-    # CUDA Graph is suggested for small batch sizes and small resolutions to reduce CPU overhead.
-    # But it can increase the amount of GPU memory used.
-    # For StableVideoDiffusionPipeline it is not needed.
-    config.enable_cuda_graph = True
-
-    pipe = compile(pipe, config)
 
 
 def predict_image(prompt, seed=1231231):
@@ -579,11 +532,7 @@ def predict_image(prompt, seed=1231231):
         output_type="pil",
     )
     print(f"Pipe took {time.time() - last_time} seconds")
-    if SAFETY_CHECKER:
-        images, has_nsfw_concepts = check_nsfw_images(results.images)
-        if any(has_nsfw_concepts):
-            gr.Warning("NSFW content detected.")
-            return Image.new("RGB", (512, 512))
+
     image = results.images[0]
     with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmpfile:
         image.save(tmpfile, "JPEG", quality=80, optimize=True, progressive=True)
