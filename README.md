@@ -57,20 +57,28 @@ Les base de donnée RAG doivent se trouvé dans le dossier `../vdb/` (modifiable
 
 Rajouté ensuite un et le nom du dossier dans le dictionaire `RAG_DATABASE` (le nom seras utilsé pour l'affichage dans l'interface graphique)
 
-------------
+Pour creer des base de donnée, ce référé au [README.md](./src/RAG/README.md) présent dans le dossier `src/RAG`.
+
+------------ 
+Arboréssence de la solution
 
     ├── README.md          <- The top-level README for developers using this project.
     |
     ├── Makefile           <- Makefile with default command to run
     │
-    ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
+    ├── requirements.txt   <- The requirements file for reproducing the 
+    |                         analysis environment, e.g.
     │                         generated with `pip freeze > requirements.txt`
     │
     └── src                <- Source code for use in this project.
-        └── testing        <- Code use to test different models
-            ├── test.py
-            ├── auto-tester.py
-            ├── exemple.txt
-            └── README.md <- information on how to use theses scripts
+        ├── app.py         <- Code de l'interface Gradio
+        ├── utils          <- dossier contenant le code derrière l'interface
+        |   ├── utils.py   <- fonction de traitement les inputs
+        |   ├── constants.py <- fichier contenant les chemin et les constants
+        |   └── RAG_utils.py <- fonction suplémentaire pour RAG
+        ├── RAG            <- Dossier contenant des script pour géré des base de 
+        |                     donnée
+        └── legacy_scripts <- Dossier contenant d'ancien script de génération
+                              ! leur fonctionnement n'est pas guaranti !
 
 --------
