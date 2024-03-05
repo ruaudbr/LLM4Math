@@ -1,18 +1,14 @@
-VENV_PATH = ../venv/bin/activate
-PYTHON_PATH = ../venv/bin/python3
+VENV_PATH = ./venv/bin/activate
+PYTHON_PATH = ./venv/bin/python3
 
-.PHONY: help
+.PHONY: help startWebUI setup
 help: ## list toutes les commandes
 	@echo "Available targets:"
 	@awk '/^^([a-zA-Z0-9_-]+):[ \t]*##[ \t]+(.+)/' $(MAKEFILE_LIST) | column -t -s ':'
 
-.PHONY: startWebAI
+startWebUI: ## demare une interface web avec les ia
+	@$(PYTHON_PATH) ./src/app.py
 
-startWebAI: ## demare une interface web avec les ia
-	@$(PYTHON_PATH) ./src/app/app.py
-
-.PHONY: GPUutilisation
-
-GPUutilisation: ## affiche l'utilisation de la carte graphique !!ne pas lancé de scripte si qqc tourne deja!!
-	@nvidia-smi
-
+setup: ## create the python venv and install all the dependancy
+	@python3 -m venv venv
+	@$(PYTHON_PATH) -m pip install -r ./requirements.txt

@@ -1,0 +1,19 @@
+accelerate
+chromadb
+ctransformers
+diffusers @ git+https://github.com/kashif/diffusers.git@72249afc99c2bca3aae512a0eefba5b18c688b9b
+gradio
+huggingface-hub
+langchain
+langchain-community
+llama_cpp_python
+numpy
+torch
+torchvision
+torchaudio
+tqdm
+transformers
+bitsandbytes
+pandas
+scipy
+peft

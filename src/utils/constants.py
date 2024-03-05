@@ -73,7 +73,7 @@ def load_available_models_paths(path: str):
 
 # locally stored models + interesting models stored on the hub
 # MODELS_PATH = "/home/pie2023/dataSSD/models/"
-MODELS_PATH = "/home/pie2023/data/models/"
+MODELS_PATH = "../models/"
 
 available_models_paths = load_available_models_paths(MODELS_PATH)
 MODEL_NAMES = list(available_models_paths.keys()) + list(MODELS_ID.keys())
