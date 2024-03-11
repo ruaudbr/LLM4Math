@@ -1,42 +1,40 @@
 PIE MSXS-08-2023/2024
 ==============================
 
-ISAE-SUPAERO Group project for Prof en Poche
-
-Project Organization
+Organisation du projet
 
 ==============================
 
-Les commandes de base facile à lancé sont visible avec `make help`
+Les commandes de base faciles à lancer sont visibles avec `make help`.
 
 ==============================
 
-# Configuration minimum :
+# Configuration minimale :
 
 -   Make
 -   python3 et python3-venv
--   GPU qui support cuda (testé la command `nvidia-smi`)
+-   GPU qui supporte cuda (par exemple, tester la command `nvidia-smi`)
 
-L'instalation a seulement été testé sur des Linux
+L'installation a uniquement été testée sur Linux.
 
 # Installation
 
-cette outil utilise Makefile, pip et l'outils d'environement virtuelle de python3.
+Cet outil utilise Makefile, pip et l'outil d'environnement virtuel de python3.
 
-pour installé les dépendance sur linux, run `Make setup`
+Pour installer les dépendances sur linux, lancer `make setup`.
 
-une fois les dépendance installé, l'interface peut etre lancé avec `Make startWebUI`
+Une fois les dépendances installées, l'interface peut être lancée avec `make startWebUI`.
 
 ==============================
 
 # Modèle et base de donnée
 
-Les chemin de base et les listes de modèle peuvent etre modifier dans le fichier `src/app/utils/constants.py`
+Les chemins de base et les listes de modèles peuvent être modifiés dans le fichier `src/app/utils/constants.py`.
 
 ## Modèle hugging face
 
-Les modèles utilisant la librairie Hugging-face/transform sont automatiquement téléchargé quand vous voulé les chargés. 
-Selectionné le modèle dans la liste de l'interface graphic et cliqué sur `load`
+Les modèles utilisant la librairie Hugging-face/transform sont automatiquement téléchargés quand vous voulez les charger. 
+Selectionner le modèle dans la liste de l'interface graphique et cliquer sur `load`.
 
 Pour ajouté un modèle dans la liste, modifier le dictionère `MODEL_ID` dans `src/utils/constants`.
 le format est ` "name_of_model" : "path_to_model" `.
