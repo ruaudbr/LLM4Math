@@ -55,7 +55,7 @@ from utils.constants import (
     REPO,
     TAESD_MODEL,
 )
-from utils.RAG import build_prompt, process_llm_response
+from utils.RAG_utils import build_prompt, process_llm_response
 
 logger = logging.getLogger(__name__)
 
@@ -149,7 +149,7 @@ def load_gguf_model(
         cache_model_name = model_name
 
     except Exception as e:
-        gr.Warning(f"Erreur : " + {e})
+        gr.Warning("Erreur : " + e)
         logger.info(f"Error loading model through ctransformers: \n{e} ")
         model, tokenizer, cache_model_name = None, None, None
 
@@ -234,7 +234,7 @@ def load_hf_model(
         gr.Info("Le modèle " + model_name + " à été correctement chargé")
         logger.info("Model loaded successfully :)")
     except Exception as e:
-        gr.Warning(f"Erreur : " + {e})
+        gr.Warning("Erreur : " + e)
         logger.info(f"Error loading model through transformers: \n{e} ")
         model, tokenizer, cache_model_name = None, None, None
 

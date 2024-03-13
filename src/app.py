@@ -2,7 +2,6 @@ import argparse
 import logging
 
 import gradio as gr
-from utils import load_model, predict, predict_image, save_option, test_a_file
 from utils.constants import (
     DEFAULT_MODEL,
     DEFAULT_PRECISION,
@@ -13,6 +12,7 @@ from utils.constants import (
     OLLAMA_default,
     available_models_paths,
 )
+from utils.utils import load_model, predict, predict_image, save_option, test_a_file
 
 # ---------------------------------------------------------------------------
 # logger
