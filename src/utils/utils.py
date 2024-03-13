@@ -34,9 +34,7 @@ from langchain_community.llms import Ollama
 # To create/ use the vector database
 from langchain_community.vectorstores import Chroma
 from llama_cpp import Llama
-from PIL import Image
 from safetensors.torch import load_file
-from tqdm import tqdm
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -48,7 +46,6 @@ from utils.constants import (
     CHECKPOINT,
     DEFAULT_GGUF_CACHE,
     DEFAULT_HF_CACHE,
-    DEFAULT_MODEL,
     DEFAULT_PRECISION,
     GENERATION_CONFIG,
     MODELS_ID,
@@ -60,8 +57,6 @@ from utils.constants import (
 )
 from utils.RAG_utils import build_prompt, process_llm_response
 
-# ------
-# logger
 logger = logging.getLogger(__name__)
 
 

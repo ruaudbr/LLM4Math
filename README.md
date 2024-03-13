@@ -1,4 +1,4 @@
-# PIE MSXS-08-2023/2024
+# PIE MSXS-08 2023/2024
 
 ## Arborescence de la solution
 
@@ -21,7 +21,7 @@
         └── legacy_scripts <- Dossier contenant d'anciens scripts de génération
                               ! leur fonctionnement n'est pas garanti !
 
-## Configuration minimale :
+## Configuration minimale
 
 -   make;
 -   python3 et python3-venv;
