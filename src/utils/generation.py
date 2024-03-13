@@ -55,7 +55,7 @@ from utils.constants import (
     REPO,
     TAESD_MODEL,
 )
-from utils.RAG_utils import build_prompt, process_llm_response
+from utils.RAG import build_prompt, process_llm_response
 
 logger = logging.getLogger(__name__)
 
