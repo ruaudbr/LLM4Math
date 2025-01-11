@@ -4,19 +4,30 @@ import tempfile
 import time
 from pathlib import Path
 from threading import Thread
+import json
+import requests
+import random
+from PIL import Image
 
 import gradio as gr
 import pandas as pd
 import torch
 from ctransformers import AutoModelForCausalLM as c_AutoModelForCausalLM
 
-## For image generation
+
 from diffusers import (
     AutoencoderTiny,
     EulerDiscreteScheduler,
     StableDiffusionXLPipeline,
+    FluxPipeline,
     UNet2DConditionModel,
 )
+
+# This is used for comfyui generation
+
+
+## For image generation
+
 from huggingface_hub import hf_hub_download
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
@@ -42,8 +53,11 @@ from transformers import (
     TextIteratorStreamer,
 )
 from utils.constants import (
-    BASE,
+    IMAGE_MODELS,
+    BASE, 
     CHECKPOINT,
+    REPO,
+    TAESD_MODEL,
     DEFAULT_GGUF_CACHE,
     DEFAULT_HF_CACHE,
     DEFAULT_PRECISION,
@@ -51,9 +65,7 @@ from utils.constants import (
     MODELS_ID,
     ORIGINAL_MODEL,
     RAG_DATABASE,
-    RAG_FOLDER_PATH,
-    REPO,
-    TAESD_MODEL,
+    RAG_FOLDER_PATH
 )
 from utils.RAG import build_prompt, process_llm_response
 
@@ -149,7 +161,8 @@ def load_gguf_model(
         cache_model_name = model_name
 
     except Exception as e:
-        gr.Warning("Erreur : " + e)
+        gr.Warning(f"Erreur : {e}")
+
         logger.info(f"Error loading model through ctransformers: \n{e} ")
         model, tokenizer, cache_model_name = None, None, None
 
@@ -234,7 +247,8 @@ def load_hf_model(
         gr.Info("Le modèle " + model_name + " à été correctement chargé")
         logger.info("Model loaded successfully :)")
     except Exception as e:
-        gr.Warning("Erreur : " + e)
+        gr.Warning(f"Erreur : {e}")
+
         logger.info(f"Error loading model through transformers: \n{e} ")
         model, tokenizer, cache_model_name = None, None, None
 
@@ -477,44 +491,135 @@ def predict_RAG(msg: str):
     yield process_llm_response(llm_response)
 
 
-# ----------------
-# Image generation
+
+# ---------------- Image generation -----------------
 
 # Code copy-pasted from https://huggingface.co/spaces/radames/Real-Time-Text-to-Image-SDXL-Lightning/blob/main/app.py
 # And simplified
 
 
-USE_TAESD = os.environ.get("USE_TAESD", "0") == "1"
 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch_device = device
-torch_dtype = torch.float16
+def initialize_pipeline(model_name):
+    model = IMAGE_MODELS[model_name]
+    if model_name == "Black forest":
+        return initialize_pipeline_black_forest(model["BASE"], model["CHECKPOINT"], model["REPO"], model["USE_TAESD"], model["TAESD_MODEL"])
+        
+    elif model_name == "Stable diffusion":
+        return stable_diffusion_pipeline( model["BASE"], model["CHECKPOINT"], model["REPO"], model["USE_TAESD"], model["TAESD_MODEL"])
+    else:
+        return basic_pipeline()
+
+def initialize_pipeline_black_forest(base_model, checkpoint, repo, use_taesd, taesd_model, device=torch.device("cuda"), torch_dtype=torch.float16):
+    torch_dtype = torch.float16
+    gr.Info("La pipeline est en cours de chargement")
+    try:
+            # Initialize the pipeline
+            pipe = FluxPipeline.from_pretrained(base_model, torch_dtype=torch_dtype, use_fast=True).to(device)
+            
+            # Optionally use Tiny Autoencoder
+            if use_taesd and taesd_model:
+                pipe.vae = AutoencoderTiny.from_pretrained(taesd_model, torch_dtype=torch_dtype, use_safetensors=True).to(device)
+            
+            # Set custom scheduler
+            pipe.scheduler = EulerDiscreteScheduler.from_config(pipe.scheduler.config, timestep_spacing="trailing")
+            pipe.set_progress_bar_config(disable=True)
+            
+            gr.Info("La pipeline à été correctement chargé")
+            return pipe
+    except Exception as e:
+            gr.Warning(f"Erreur lors du chargement de FluxPipeline: {e}")
+            logger.error(f"Error loading FluxPipeline: {e}")
+            return None
+
+def stable_diffusion_pipeline(base_model, checkpoint, repo, use_taesd, taesd_model, device=torch.device("cuda"), torch_dtype=torch.float16):
+        gr.Info("La pipeline est en cours de chargement")
+
+        # Load UNet configuration and model
+        unet_config = UNet2DConditionModel.load_config(base_model, subfolder="unet")
+        unet = UNet2DConditionModel.from_config(unet_config).to(device, torch_dtype)
+        unet.load_state_dict(load_file(hf_hub_download(repo, checkpoint), device=device.type))
+
+        # Initialize the pipeline
+        pipe = StableDiffusionXLPipeline.from_pretrained(base_model, unet=unet, torch_dtype=torch_dtype, variant="fp16").to(device)
+
+        # Optionally use Tiny Autoencoder
+        if use_taesd and taesd_model:
+            pipe.vae = AutoencoderTiny.from_pretrained(taesd_model, torch_dtype=torch_dtype, use_safetensors=True).to(device)
+
+        # Set custom scheduler
+        pipe.scheduler = EulerDiscreteScheduler.from_config(pipe.scheduler.config, timestep_spacing="trailing")
+        pipe.set_progress_bar_config(disable=True)
+        
+        gr.Info("La pipeline à été correctement chargé")
+
+        return pipe
+    
+def basic_pipeline():
+    gr.Info("La pipeline est en cours de chargement")    
+    USE_TAESD = os.environ.get("USE_TAESD", "0") == "1"
 
 
-unet_config = UNet2DConditionModel.load_config(BASE, subfolder="unet")
-unet = UNet2DConditionModel.from_config(unet_config).to("cuda", torch.float16)
-
-unet.load_state_dict(load_file(hf_hub_download(REPO, CHECKPOINT), device="cuda"))
-pipe = StableDiffusionXLPipeline.from_pretrained(
-    BASE, unet=unet, torch_dtype=torch.float16, variant="fp16", safety_checker=False
-).to("cuda")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    torch_device = device
+    torch_dtype = torch.float16
 
 
-if USE_TAESD:
-    pipe.vae = AutoencoderTiny.from_pretrained(
-        TAESD_MODEL, torch_dtype=torch_dtype, use_safetensors=True
-    ).to(device)
+    unet_config = UNet2DConditionModel.load_config(BASE, subfolder="unet")
+    unet = UNet2DConditionModel.from_config(unet_config).to("cuda", torch.float16)
+
+    unet.load_state_dict(load_file(hf_hub_download(REPO, CHECKPOINT), device="cuda"))
+    pipe = StableDiffusionXLPipeline.from_pretrained(
+        BASE, unet=unet, torch_dtype=torch.float16, variant="fp16", safety_checker=False
+    ).to("cuda")
 
 
-# Ensure sampler uses "trailing" timesteps.
-pipe.scheduler = EulerDiscreteScheduler.from_config(
-    pipe.scheduler.config, timestep_spacing="trailing"
-)
-pipe.set_progress_bar_config(disable=True)
+    if USE_TAESD:
+        pipe.vae = AutoencoderTiny.from_pretrained(
+            TAESD_MODEL, torch_dtype=torch_dtype, use_safetensors=True
+        ).to(device)
 
 
-def predict_image(prompt, seed=1231231):
+    # Ensure sampler uses "trailing" timesteps.
+    pipe.scheduler = EulerDiscreteScheduler.from_config(
+        pipe.scheduler.config, timestep_spacing="trailing"
+    )
+    pipe.set_progress_bar_config(disable=True)
+    gr.Info("La pipeline à été correctement chargé")
+    return pipe    
+    
+def predict_image_para(
+    pipe, prompt, seed=1231231,
+    num_inference_steps=2, guidance_scale=0,
+    width=512, height=512, output_type="pil"
+):
+    # Set random seed for reproducibility
+    generator = torch.manual_seed(seed)
+
+    # Time the inference process
+    start_time = time.time()
+
+    # Generate the image
+    results = pipe(
+        prompt=prompt,
+        generator=generator,
+        num_inference_steps=num_inference_steps,
+        guidance_scale=guidance_scale,
+        width=width,
+        height=height,
+        output_type=output_type,
+    )
+
+    gr.Info(f"Pipeline inference took {time.time() - start_time:.2f} seconds")
+
+    # Save and return the generated image
+    image = results.images[0]
+    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmpfile:
+        image.save(tmpfile, "JPEG", quality=80, optimize=True, progressive=True)
+        return Path(tmpfile.name)
+    
+
+def predict_image(pipe,prompt, seed=1231231):
     generator = torch.manual_seed(seed)
     last_time = time.time()
     results = pipe(
@@ -532,3 +637,56 @@ def predict_image(prompt, seed=1231231):
     with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmpfile:
         image.save(tmpfile, "JPEG", quality=80, optimize=True, progressive=True)
         return Path(tmpfile.name)
+
+
+
+#-------------------------Image generation with workfow----------------------------
+
+URL = "http://192.168.1.69:7801/ComfyBackendDirect/api/prompt"
+INPUT_DIR = "replace with comfyui input dir path"
+OUTPUT_DIR = "replace with comfyui ouput directory path"
+
+cached_seed = 0
+
+def get_latest_image(folder):
+    files = os.listdir(folder)
+    image_files = [f for f in files if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+    image_files.sort(key=lambda x: os.path.getmtime(os.path.join(folder, x)))
+    latest_image = os.path.join(folder, image_files[-1]) if image_files else None
+    return latest_image
+
+
+def start_queue(prompt_workflow):
+    p = {"prompt": prompt_workflow}
+    data = json.dumps(p).encode('utf-8')
+    requests.post(URL, data=data)
+
+
+def generate_image(input_image):   
+    with open("workflow_api.json", "r") as file_json:
+        prompt = json.load(file_json)
+
+    prompt["3"]["inputs"]["seed"] = random.randint(1, 1500000)
+    global cached_seed
+    if cached_seed == prompt["3"]["inputs"]["seed"]:
+        return get_latest_image(OUTPUT_DIR)
+    cached_seed = prompt["3"]["inputs"]["seed"]
+    
+    image = Image.fromarray(input_image)
+    min_side = min(image.size)
+    scale_factor = 512 / min_side
+    new_size = (round(image.size[0] * scale_factor), round(image.size[1] * scale_factor))
+    resized_image = image.resize(new_size)
+
+    resized_image.save(os.path.join(INPUT_DIR, "test_api.jpg"))
+
+    previous_image = get_latest_image(OUTPUT_DIR)
+    
+    start_queue(prompt)
+
+    while True:
+        latest_image = get_latest_image(OUTPUT_DIR)
+        if (latest_image != previous_image):
+            return latest_image
+
+        time.sleep(1)

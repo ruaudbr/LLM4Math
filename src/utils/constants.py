@@ -1,5 +1,10 @@
 import os
 
+
+# ---------------------------------------------------------------------------
+# Constantes pour la génération de texte
+# ---------------------------------------------------------------------------
+
 MODELS_ID = {
     "Yi-34b_chat": "01-ai/Yi-34b-Chat",
     ### Mistral-based ###
@@ -30,6 +35,8 @@ MODELS_ID = {
     # Math-oriented models
     "deepseek": "deepseek-ai/deepseek-math-7b-instruct",
 }
+
+DEFAULT_MODEL = "llama2-chat-7b"
 
 OLLAMA_MODEL = ["mixtral", "llama2"]
 OLLAMA_default = "mixtral"
@@ -81,7 +88,6 @@ MODEL_NAMES = list(available_models_paths.keys()) + list(MODELS_ID.keys())
 DEFAULT_HF_CACHE = MODELS_PATH + "hf_models/"
 DEFAULT_GGUF_CACHE = MODELS_PATH + "gguf_models/"
 
-DEFAULT_MODEL = "llama2-chat-7b"
 
 PRECISIONS = ["4", "8", "16", "32"]
 DEFAULT_PRECISION = "4"
@@ -97,10 +103,31 @@ GENERATION_CONFIG = dict(
     num_beams=1,
 )
 
-# For image generation
+# ---------------------------------------------------------------------------
+# Contantes pour génération d'images
+# ---------------------------------------------------------------------------
 
 BASE = "stabilityai/stable-diffusion-xl-base-1.0"
 REPO = "ByteDance/SDXL-Lightning"
 # 1-step
 CHECKPOINT = "sdxl_lightning_2step_unet.safetensors"
 TAESD_MODEL = "madebyollin/taesdxl"
+
+
+STABLE_DIFFUSION={"BASE" : "stabilityai/stable-diffusion-xl-base-1.0",
+          "REPO" : "ByteDance/SDXL-Lightning",
+          "CHECKPOINT" : "sdxl_lightning_2step_unet.safetensors",
+          "USE_TAESD" : True,
+          "TAESD_MODEL" : "madebyollin/taesdxl"}
+
+FLUX_SCHNELL = {
+    "BASE": "black-forest-labs/FLUX.1-schnell",
+    "REPO": "black-forest-labs/FLUX.1-schnell",
+    "CHECKPOINT": "flux_schnell.safetensors",
+    "USE_TAESD": False,
+    "TAESD_MODEL": None
+}
+
+IMAGE_MODELS = {"Stable diffusion": STABLE_DIFFUSION, 
+                "Black forest": FLUX_SCHNELL,
+                "Custom": None}

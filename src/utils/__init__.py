@@ -4,4 +4,5 @@ from utils.generation import (
     predict_image,
     save_option,
     test_a_file,
+    initialize_pipeline
 )
